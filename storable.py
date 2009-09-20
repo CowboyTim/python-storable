@@ -123,13 +123,3 @@ def process_item(fh, cache):
     print(cache)
     return data
 
-# simple test
-fh = open('/tmp/aaa', 'rb')
-data = thaw(fh)
-print(data)
-#data['dd'] = 'y'
-#data['cc']['yy'] = 'y'
-#print(data)
-
-
-fh.close()
