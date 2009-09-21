@@ -2,12 +2,13 @@
 
 from storable import thaw
 
-# simple test
+# simple test: read data
 fh = open('/tmp/aaa', 'rb')
-data = thaw(fh)
-print(data)
-#data['dd'] = 'y'
-#data['cc']['yy'] = 'y'
-#print(data)
-
+data = fh.read()
 fh.close()
+
+# thaw() it
+data = thaw(data)
+
+# dump it
+print(data)

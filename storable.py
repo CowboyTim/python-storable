@@ -27,7 +27,7 @@
 #
 
 from struct import unpack
-
+import cStringIO
 
 def SX_OBJECT(fh, cache):
     i = unpack('i', fh.read(4))[0]
@@ -149,7 +149,8 @@ def process_item(fh, cache):
     print(cache)
     return data
 
-def thaw(fh):
+def thaw(frozen_data):
+    fh    = cStringIO.StringIO(frozen_data)
     magic = fh.read(2)
     if magic == '\x05\x07':
         print("OK:nfreeze") 
