@@ -16,5 +16,3 @@ for f in glob.glob('/python-storable/resources/*nfreeze.storable'):
 
     # dump it
     print(data)
-
-    
