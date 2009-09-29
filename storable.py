@@ -30,26 +30,26 @@ from struct import unpack
 import cStringIO
 
 def SX_OBJECT(fh, cache):
-    i = unpack('i', fh.read(4))[0]
+    i = unpack('!I', fh.read(4))[0]
     return cache['objects'][i-1]
 
 def SX_LSCALAR(fh, cache):
-    size = unpack('i', fh.read(4))[0]
+    size = unpack('!I', fh.read(4))[0]
     return fh.read(size)
 
 def SX_LUTF8STR(fh, cache):
     return SX_LSCALAR(fh, cache)
 
 def SX_ARRAY(fh, cache):
-    size = unpack('i', fh.read(4))[0]
+    size = unpack('!I', fh.read(4))[0]
     return [process_item(fh, cache) for i in range(0,size)]
 
 def SX_HASH(fh, cache):
-    size = unpack('i', fh.read(4))[0]
+    size = unpack('!I', fh.read(4))[0]
     data = {}
     for i in range(0,size):
         value = process_item(fh, cache)
-        size  = unpack('i', fh.read(4))[0]
+        size  = unpack('!I', fh.read(4))[0]
         key   = fh.read(size)
         data[key] = value
 
