@@ -5,7 +5,7 @@ import glob
 
 from storable import thaw
 
-for infile in glob.glob('resources/*_nfreeze.storable'):
+for infile in sorted(glob.glob('resources/*_nfreeze.storable')):
     # simple test: read data
     print('reading from '+infile)
     infh = open(infile, 'rb')
