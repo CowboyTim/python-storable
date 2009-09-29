@@ -13,6 +13,7 @@ use Storable qw(nfreeze freeze);
 my $base = $FindBin::Bin.'/resources';
 mkpath($base);
 my $filenames = {};
+my $count     = 0;
 
 # very simple tests: note, for storable. all a ref
 save_sample('scalar',        \'Some scalar, less then 255 bytes size');
@@ -105,7 +106,10 @@ save_sample('ref04', \\\\@array);
 sub save_sample {
     my ($what, $data) = @_;
     for my $type (qw(freeze nfreeze)){
-        my $filename = "$base/${what}_${Storable::VERSION}_$Config{myarchname}_${type}.storable";
+        $count++;
+        my $filename =
+            "$base/".sprintf('%03d', $count)."_${what}_".
+            "${Storable::VERSION}_$Config{myarchname}_${type}.storable";
 
         print "saving sample $what for $type to $filename\n";
         die "Duplicate filename $filename\n"

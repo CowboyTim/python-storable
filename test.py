@@ -5,7 +5,7 @@ import glob
 
 from storable import thaw
 
-for infile in glob.glob('resources/*nfreeze.storable'):
+for infile in glob.glob('resources/*_nfreeze.storable'):
     # simple test: read data
     print('reading from '+infile)
     infh = open(infile, 'rb')
@@ -16,10 +16,9 @@ for infile in glob.glob('resources/*nfreeze.storable'):
     data = thaw(data)
 
     # dump it
-    outfile = infile + '.pickle'
+    outfile = infile + '.py'
     print('writing output to '+outfile)
     outfh = open(outfile,'wb')
-    pickle.dump(data, outfh)
+    outfh.write(str(data))
     outfh.close()
     
-    print(data)
