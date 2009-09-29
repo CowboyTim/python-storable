@@ -106,12 +106,15 @@ sub save_sample {
     for my $type (qw(freeze nfreeze)){
         my $filename = "$base/${what}_x86_${type}.storable";
 
-        no strict 'refs';
         print "saving sample $what for $type to $filename\n";
-        my $a = &$type($data);
         die "Duplicate filename $filename\n"
             if exists $filenames->{$filename};
         $filenames->{$filename} = 1;
+        my $a;
+        {
+            no strict 'refs';
+            $a = &$type($data);
+        }
         open(my $fh, ">", $filename);
         print $fh $a;
         close($fh);
