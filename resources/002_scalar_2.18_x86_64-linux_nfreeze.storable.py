@@ -1,0 +1,1 @@
+Some scalar, less then 255 bytes size
