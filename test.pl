@@ -99,7 +99,7 @@ save_sample('ref04', \\\\@array);
 {
     # small circular one with an array
     my $a = [undef, 'yy'];
-     push @{$a}, $a;
+    push @{$a}, $a;
     save_sample('complex07', $a);
 }
 
