@@ -5,6 +5,7 @@ use strict; use warnings;
 use FindBin;
 use Fatal qw(open);
 use File::Path qw(mkpath);
+use Config;
 
 use Storable qw(nfreeze freeze);
 
@@ -104,7 +105,7 @@ save_sample('ref04', \\\\@array);
 sub save_sample {
     my ($what, $data) = @_;
     for my $type (qw(freeze nfreeze)){
-        my $filename = "$base/${what}_x86_${type}.storable";
+        my $filename = "$base/${what}_${Storable::VERSION}_$Config{myarchname}_${type}.storable";
 
         print "saving sample $what for $type to $filename\n";
         die "Duplicate filename $filename\n"
