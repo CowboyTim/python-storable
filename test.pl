@@ -2,13 +2,14 @@
 
 use strict; use warnings;
 
+use FindBin;
 use Fatal qw(open);
 use File::Path qw(mkpath);
 
 use Storable qw(nfreeze freeze);
 
 # make the base path
-my $base = "/python-storable/resources";
+my $base = $FindBin::Bin.'/resources';
 mkpath($base);
 my $filenames = {};
 
