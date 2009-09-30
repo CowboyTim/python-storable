@@ -10,7 +10,7 @@ use Config;
 use Storable qw(nfreeze freeze);
 
 # make the base path
-my $base = $FindBin::Bin.'/resources';
+my $base = $FindBin::Bin.'/resources/'.$Config{myarchname};
 mkpath($base);
 my $filenames = {};
 my $count     = 0;
