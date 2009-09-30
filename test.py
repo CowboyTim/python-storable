@@ -2,6 +2,7 @@
 
 import pickle
 import glob
+import traceback
 from re import match
 from os.path import basename
 
@@ -17,8 +18,8 @@ for infile in sorted(glob.glob('resources/*/*/*_nfreeze.storable')):
     # thaw() it
     try:
         data = str(thaw(data))
-    except:
-        pass
+    except Exception,e:
+        traceback.print_exc(e)
 
     result_we_need = None
 
@@ -30,8 +31,8 @@ for infile in sorted(glob.glob('resources/*/*/*_nfreeze.storable')):
         outfh = open(outfile,'rb')
         result_we_need = outfh.read()
         outfh.close()
-    except:
-        pass
+    except Exception,e:
+        traceback.print_exc(e)
 
     # check
     if result_we_need == data:
