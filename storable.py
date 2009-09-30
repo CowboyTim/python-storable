@@ -142,22 +142,24 @@ def process_item(fh, cache):
     data = None
     magic_type = fh.read(1)
     if magic_type in engine:
-        print(engine[magic_type])
+        #print(engine[magic_type])
         data = engine[magic_type](fh, cache)
 
     cache['objects'].append(data)
-    print(cache)
+    #print(cache)
     return data
 
 def thaw(frozen_data):
     fh    = cStringIO.StringIO(frozen_data)
     magic = fh.read(2)
     if magic == '\x05\x07':
-        print("OK:nfreeze") 
+        #print("OK:nfreeze") 
+        pass
     if magic == '\x04\x07':
         magic = fh.read(9)
         if magic == '\x04\x34\x33\x32\x31\x04\x04\x04\x08':
-            print("OK:freeze") 
+            #print("OK:freeze") 
+            pass
 
     cache = { 'objects' : [], 'classes' : [] } 
     return process_item(fh, cache)
