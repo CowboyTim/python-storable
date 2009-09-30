@@ -42,11 +42,17 @@ def SX_LUTF8STR(fh, cache):
 
 def SX_ARRAY(fh, cache):
     size = unpack('!I', fh.read(4))[0]
-    return [process_item(fh, cache) for i in range(0,size)]
+    data = []
+    cache['objects'].append(data)
+    for i in range(0,size):
+        data.append(process_item(fh, cache))
+
+    return data
 
 def SX_HASH(fh, cache):
     size = unpack('!I', fh.read(4))[0]
     data = {}
+    cache['objects'].append(data)
     for i in range(0,size):
         value = process_item(fh, cache)
         size  = unpack('!I', fh.read(4))[0]
@@ -145,7 +151,8 @@ def process_item(fh, cache):
         #print(engine[magic_type])
         data = engine[magic_type](fh, cache)
 
-    cache['objects'].append(data)
+    if not(magic_type == SX_ARRAY or magic_type == SX_HASH):
+        cache['objects'].append(data)
     #print(cache)
     return data
 
