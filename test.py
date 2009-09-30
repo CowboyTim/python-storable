@@ -2,6 +2,8 @@
 
 import pickle
 import glob
+from re import match
+from os.path import basename
 
 from storable import thaw
 
@@ -18,11 +20,18 @@ for infile in sorted(glob.glob('resources/*/*/*_nfreeze.storable')):
     except:
         pass
 
+    result_we_need = None
+
     # read the to-be-result in
-    outfile = infile + '.py'
-    outfh = open(outfile,'rb')
-    result_we_need = outfh.read()
-    outfh.close()
+    outfile = basename(infile)
+    group = match(r"(.*)_\d+\.\d+", outfile)
+    outfile = 'resources/results/' + group.group(1) + '.py'
+    try:
+        outfh = open(outfile,'rb')
+        result_we_need = outfh.read()
+        outfh.close()
+    except:
+        pass
 
     # check
     if result_we_need == data:
