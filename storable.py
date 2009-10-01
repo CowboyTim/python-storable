@@ -31,7 +31,7 @@ import cStringIO
 
 def SX_OBJECT(fh, cache):
     i = unpack('!I', fh.read(4))[0]
-    return cache['objects'][i-1]
+    return cache['objects'][i]
 
 def SX_LSCALAR(fh, cache):
     size = unpack('!I', fh.read(4))[0]
@@ -64,7 +64,11 @@ def SX_HASH(fh, cache):
 def SX_REF(fh, cache):
     # in fact: ignored, python doesn't have/need them, although a GOTO
     # would consume less memory/cpu by not executing another method ;-)
-    return process_item(fh, cache)
+    cache['objects'].append('REF')
+    i = len(cache['objects']) - 1
+    data = process_item(fh, cache)
+    cache['objects'][i] = data
+    return data
 
 def SX_UNDEF(fh, cache):
     return None
@@ -151,7 +155,7 @@ def process_item(fh, cache):
         #print(engine[magic_type])
         data = engine[magic_type](fh, cache)
 
-    if not(magic_type == SX_ARRAY or magic_type == SX_HASH):
+    if not(magic_type == SX_ARRAY or magic_type == SX_HASH or magic_type == SX_REF):
         cache['objects'].append(data)
     #print(cache)
     return data
