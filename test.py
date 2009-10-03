@@ -36,9 +36,10 @@ class TestStorable(unittest.TestCase):
                 testcase, outfile, result_we_need, data = self.load_objects(infile)
                 print(testcase)
                 try:
-                    self.assertEqual(result_we_need, data)
-                except Exception, e:
-                    traceback.print_exc(e)
+                    self.assertEqual(data, result_we_need)
+                except AssertionError, e:
+                    print('FILE: '+infile)
+                    raise e
 
     def load_objects(self, infile):
 
@@ -78,10 +79,14 @@ class TestStorable(unittest.TestCase):
         if      testcase != '048_complex05' \
             and testcase != '050_complex06' \
             and testcase != '052_complex07':
-            self.assertEqual(result_we_need, data)
+            try:
+                self.assertEqual(data, result_we_need)
+            except AssertionError, e:
+                print('FILE: '+infile)
+                raise e
 
         # dump it
-        if True:
+        if False:
             #print('writing output to '+outfile)
             outfh = open(outfile,'wb')
             outfh.write(str(data))
