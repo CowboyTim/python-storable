@@ -31,7 +31,7 @@ class TestStorable(unittest.TestCase):
             self.do_test(infile)
 
     def test_circular(self):
-        for tc in ['052_complex07', '050_complex06', '048_complex05', '046_complex04']:
+        for tc in ['052_complex07', '050_complex06', '048_complex05']:
             for infile in sorted(glob.glob('resources/*/*/'+tc+'*_nfreeze.storable')):
                 testcase, outfile, result_we_need, data = self.load_objects(infile)
                 print(testcase)
@@ -75,8 +75,7 @@ class TestStorable(unittest.TestCase):
         testcase, outfile, result_we_need, data = self.load_objects(infile)
 
         # check
-        if      testcase != '046_complex04' \
-            and testcase != '048_complex05' \
+        if      testcase != '048_complex05' \
             and testcase != '050_complex06' \
             and testcase != '052_complex07':
             self.assertEqual(result_we_need, data)
