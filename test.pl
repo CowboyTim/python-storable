@@ -55,7 +55,7 @@ save_sample('ref04', \\\\@array);
 {
     # same object, added + shared multiple times in an array. In python,
     # that is preferrably also the same object. This is possible too. Note
-    # that this is a circular test allready too
+    # that this is a reference SX_OBJECT test allready too
     $array[5] = 'x';
     my $a = [undef, \@array, \@array, \\@array, \\@array];
     save_sample('complex01', $a);

@@ -43,7 +43,6 @@ def SX_LUTF8STR(fh, cache):
 def SX_ARRAY(fh, cache):
     size = unpack('!I', fh.read(4))[0]
     data = []
-    cache['objects'].append(data)
     for i in range(0,size):
         data.append(process_item(fh, cache))
 
@@ -52,7 +51,6 @@ def SX_ARRAY(fh, cache):
 def SX_HASH(fh, cache):
     size = unpack('!I', fh.read(4))[0]
     data = {}
-    cache['objects'].append(data)
     for i in range(0,size):
         value = process_item(fh, cache)
         size  = unpack('!I', fh.read(4))[0]
@@ -62,13 +60,7 @@ def SX_HASH(fh, cache):
     return data
 
 def SX_REF(fh, cache):
-    # in fact: ignored, python doesn't have/need them, although a GOTO
-    # would consume less memory/cpu by not executing another method ;-)
-    cache['objects'].append('REF')
-    i = len(cache['objects']) - 1
-    data = process_item(fh, cache)
-    cache['objects'][i] = data
-    return data
+    return process_item(fh, cache)
 
 def SX_UNDEF(fh, cache):
     return None
@@ -87,8 +79,6 @@ def SX_UTF8STR(fh, cache):
     return SX_SCALAR(fh, cache)
 
 def SX_TIED_ARRAY(fh, cache):
-    # in fact: ignored, python doesn't have/need them, although a GOTO
-    # would consume less memory/cpu by not executing another method ;-)
     return process_item(fh, cache)
 
 def SX_TIED_HASH(fh, cache):
@@ -155,8 +145,7 @@ def process_item(fh, cache):
         #print(engine[magic_type])
         data = engine[magic_type](fh, cache)
 
-    if not(magic_type == SX_ARRAY or magic_type == SX_HASH or magic_type == SX_REF):
-        cache['objects'].append(data)
+    cache['objects'].append(data)
     #print(cache)
     return data
 
