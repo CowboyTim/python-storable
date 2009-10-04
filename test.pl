@@ -116,6 +116,31 @@ save_sample('ref04', \\\\@array);
     save_sample('complex08', $a);
 }
 
+{
+    # bless test: 1: scalar, $test is undef => will result in 'None'
+    my $a = bless \my $test, 'Aa::Bb';
+    save_sample('bless01', $a);
+}
+
+{
+    # bless test: 2: scalar, $test is 'Test' => will result in 'Test'
+    my $test = 'Test';
+    my $a = bless \$test, 'Aa::Bb';
+    save_sample('bless02', $a);
+}
+
+{
+    # bless test: 2: array
+    my $a = bless [], 'Aa::Bb';
+    save_sample('bless03', $a);
+}
+
+{
+    # bless test: 1: hash
+    my $a = bless {}, 'Aa::Bb';
+    save_sample('bless04', $a);
+}
+
 sub save_sample {
     my ($what, $data) = @_;
     for my $type (qw(freeze nfreeze)){
