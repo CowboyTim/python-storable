@@ -79,7 +79,8 @@ save_sample('ref04', \\\\@array);
 }
 
 {
-    # same thing with an array of course.
+    # same thing with an array of course. The 'a', 'b', 'c' appear to be tied
+    # scalars in a storable too.
     my $a = [undef, 6, [qw(a b c), {'uu' => 5.6}]];
     $a->[6] = \$a->[0];
     $a->[7] = \$a->[1];
@@ -102,6 +103,17 @@ save_sample('ref04', \\\\@array);
     my $a = [undef, 'yy'];
     push @{$a}, $a;
     save_sample('complex07', $a);
+}
+
+{
+    # same but try to make 'a', 'b', 'c' not tied scalars
+    my $a = [undef, 6, ['a', 'b', 'c', {'uu' => 5.6}]];
+    $a->[6] = \$a->[0];
+    $a->[7] = \$a->[1];
+    $a->[5] =  $a->[2];
+    $a->[4] =  $a->[2][3];
+    $a->[3] =  $a->[2][3];
+    save_sample('complex08', $a);
 }
 
 sub save_sample {

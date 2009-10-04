@@ -30,16 +30,6 @@ class TestStorable(unittest.TestCase):
         for infile in sorted(glob.glob('resources/i686-linux/*/*_nfreeze.storable')):
             self.do_test(infile)
 
-    def test_circular(self):
-        for tc in ['052_complex07', '050_complex06', '048_complex05']:
-            for infile in sorted(glob.glob('resources/*/*/'+tc+'*_nfreeze.storable')):
-                testcase, outfile, result_we_need, data = self.load_objects(infile)
-                try:
-                    self.assertEqual(data, result_we_need)
-                except AssertionError, e:
-                    print('FILE: '+infile)
-                    raise e
-
     def load_objects(self, infile):
 
         #print('reading from '+infile)
@@ -74,22 +64,20 @@ class TestStorable(unittest.TestCase):
 
         testcase, outfile, result_we_need, data = self.load_objects(infile)
 
-        # check
-        if      testcase != '048_complex05' \
-            and testcase != '050_complex06' \
-            and testcase != '052_complex07':
-            try:
-                self.assertEqual(data, result_we_need)
-            except AssertionError, e:
-                print('FILE: '+infile)
-                raise e
-
         # dump it
-        if False:
+        if True:
             #print('writing output to '+outfile)
             outfh = open(outfile,'wb')
-            outfh.write(str(data))
+            outfh.write(data)
             outfh.close()
+
+        # check
+        try:
+            self.assertEqual(data, result_we_need)
+        except AssertionError, e:
+            print('FILE: '+infile)
+            raise e
+
     
 suite = unittest.TestLoader().loadTestsFromTestCase(TestStorable)
 unittest.TextTestRunner(verbosity=2).run(suite)
