@@ -169,6 +169,17 @@ save_sample('ref04', \\\\@array);
     save_sample('bless07', $a);
 }
 
+{
+    # utf-8 test
+    my $a = "\x{263A}";
+    save_sample('utf8test01', \$a);
+}
+
+{
+    # utf-8 test: large scalar
+    my $a = "\x{263A}" x 1024;
+    save_sample('utf8test02', \$a);
+}
 
 sub save_sample {
     my ($what, $data) = @_;
