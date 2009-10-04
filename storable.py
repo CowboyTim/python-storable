@@ -139,7 +139,7 @@ engine = {
     '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
 }
 
-def objref(cache, data):
+def handle_sx_object_refs(cache, data):
     iterateelements = None
     if type(data) is list:
         iterateelements = enumerate(iter(data))
@@ -150,7 +150,7 @@ def objref(cache, data):
     
     for k,item in iterateelements:
         if type(item) is list or type(item) is dict:
-            objref(cache, item)
+            handle_sx_object_refs(cache, item)
         if type(item) is tuple:
             data[k] = cache['objects'][item[1]]
     return data
@@ -188,7 +188,7 @@ def thaw(frozen_data):
     data = process_item(fh, cache)
 
     if cache['has_sx_object']:
-        objref(cache, data)
+        handle_sx_object_refs(cache, data)
     
     return data
 
