@@ -31,6 +31,7 @@ import cStringIO
 
 def SX_OBJECT(fh, cache, parent):
     i = unpack('!I', fh.read(4))[0]
+    cache['has_sx_object'] = True
     return (0, i)
 
 def SX_LSCALAR(fh, cache, parent):
@@ -183,9 +184,11 @@ def thaw(frozen_data):
             #print("OK:freeze") 
             pass
 
-    cache = { 'objects' : [], 'classes' : [] } 
+    cache = { 'objects' : [], 'classes' : [], 'has_sx_object' : False }
     data = process_item(fh, cache)
-    objref(cache, data)
+
+    if cache['has_sx_object']:
+        objref(cache, data)
     
     return data
 
