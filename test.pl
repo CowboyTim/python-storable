@@ -117,29 +117,58 @@ save_sample('ref04', \\\\@array);
 }
 
 {
-    # bless test: 1: scalar, $test is undef => will result in 'None'
+    # bless test: scalar, $test is undef => will result in 'None'
     my $a = bless \my $test, 'Aa::Bb';
     save_sample('bless01', $a);
 }
 
 {
-    # bless test: 2: scalar, $test is 'Test' => will result in 'Test'
+    # bless test: scalar, $test is 'Test' => will result in 'Test'
     my $test = 'Test';
     my $a = bless \$test, 'Aa::Bb';
     save_sample('bless02', $a);
 }
 
 {
-    # bless test: 2: array
+    # bless test: array
     my $a = bless [], 'Aa::Bb';
     save_sample('bless03', $a);
 }
 
 {
-    # bless test: 1: hash
+    # bless test: hash
     my $a = bless {}, 'Aa::Bb';
     save_sample('bless04', $a);
 }
+
+{
+    # bless test: ref to a ref
+    my $a = bless \{}, 'Aa::Bb';
+    save_sample('bless05', $a);
+}
+
+{
+    # bless test: more than one bless, all the same one though
+    my $a = bless [
+        bless({}, 'Aa::Bb'),
+        bless([], 'Aa::Bb'),
+        bless(\[], 'Aa::Bb'),
+        bless(\my $test, 'Aa::Bb'),
+        bless(\my $test, 'Aa::Cc'),
+        bless(['TestA'], 'Aa::Cc'),
+        bless(['TestB'], 'Aa::Dd'),
+        bless(['TestC'], 'Aa::Cc'),
+        bless(['TestD', bless({0=>bless([], 'Aa::Bb')}, 'Aa::Cc')], 'Aa::Bb'),
+    ], 'Aa::Bb';
+    save_sample('bless06', $a);
+}
+
+{
+    # bless test: bless without a package
+    my $a = bless [];
+    save_sample('bless07', $a);
+}
+
 
 sub save_sample {
     my ($what, $data) = @_;
