@@ -34,7 +34,6 @@ class TestStorable(unittest.TestCase):
         for tc in ['052_complex07', '050_complex06', '048_complex05']:
             for infile in sorted(glob.glob('resources/*/*/'+tc+'*_nfreeze.storable')):
                 testcase, outfile, result_we_need, data = self.load_objects(infile)
-                print(testcase)
                 try:
                     self.assertEqual(data, result_we_need)
                 except AssertionError, e:

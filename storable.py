@@ -31,7 +31,7 @@ import cStringIO
 
 def SX_OBJECT(fh, cache, parent):
     i = unpack('!I', fh.read(4))[0]
-    return cache['objects'][i]
+    return (0, i)
 
 def SX_LSCALAR(fh, cache, parent):
     size = unpack('!I', fh.read(4))[0]
@@ -127,7 +127,7 @@ engine = {
     '\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
     '\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
     '\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
-    '\x0d': SX_TIED_SCALAR, # (13): scalar hash forthcoming
+    '\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
     '\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
     '\x11': SX_BLESS,       # (17): Object is blessed
     '\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
@@ -138,19 +138,35 @@ engine = {
     '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
 }
 
+def objref(cache, data):
+    iterateelements = None
+    if type(data) is list:
+        iterateelements = enumerate(iter(data))
+    elif type(data) is dict:
+        iterateelements = data.iteritems()
+    else:
+        return
+    
+    for k,item in iterateelements:
+        if type(item) is list or type(item) is dict:
+            objref(cache, item)
+        if type(item) is tuple:
+            data[k] = cache['objects'][item[1]]
+    return data
+
 def process_item(fh, cache, parent=None):
     data = None
-    i = None
     magic_type = fh.read(1)
     if magic_type in engine:
         #print(engine[magic_type])
-        if magic_type != '\x00':
+        i = None
+        if magic_type not in ['\x00', '\x0b', '\x0c', '\x0d']:
             cache['objects'].append(data)
             i = len(cache['objects']) - 1
         data = engine[magic_type](fh, cache, parent)
 
-    if magic_type != '\x00':
-        cache['objects'][i] = data
+        if i is not None:
+            cache['objects'][i] = data
 
     #print(cache)
     return data
@@ -168,5 +184,8 @@ def thaw(frozen_data):
             pass
 
     cache = { 'objects' : [], 'classes' : [] } 
-    return process_item(fh, cache)
+    data = process_item(fh, cache)
+    objref(cache, data)
+    
+    return data
 
