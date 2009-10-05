@@ -65,7 +65,7 @@ class TestStorable(unittest.TestCase):
         testcase, outfile, result_we_need, data = self.load_objects(infile)
 
         # dump it
-        if True:
+        if False:
             #print('writing output to '+outfile)
             outfh = open(outfile,'wb')
             outfh.write(data)
