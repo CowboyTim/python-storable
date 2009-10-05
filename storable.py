@@ -29,89 +29,89 @@
 from struct import unpack
 import cStringIO
 
-def SX_OBJECT(fh, cache, parent):
+def SX_OBJECT(fh, cache):
     i = unpack('!I', fh.read(4))[0]
     cache['has_sx_object'] = True
     return (0, i)
 
-def SX_LSCALAR(fh, cache, parent):
+def SX_LSCALAR(fh, cache):
     size = unpack('!I', fh.read(4))[0]
     return fh.read(size)
 
-def SX_LUTF8STR(fh, cache, parent):
+def SX_LUTF8STR(fh, cache):
     return SX_LSCALAR(fh, cache)
 
-def SX_ARRAY(fh, cache, parent):
+def SX_ARRAY(fh, cache):
     size = unpack('!I', fh.read(4))[0]
     data = []
     for i in range(0,size):
-        data.append(process_item(fh, cache, data))
+        data.append(process_item(fh, cache))
 
     return data
 
-def SX_HASH(fh, cache, parent):
+def SX_HASH(fh, cache):
     size = unpack('!I', fh.read(4))[0]
     data = {}
     for i in range(0,size):
-        value = process_item(fh, cache, data)
+        value = process_item(fh, cache)
         size  = unpack('!I', fh.read(4))[0]
         key   = fh.read(size)
         data[key] = value
 
     return data
 
-def SX_REF(fh, cache, parent):
-    return process_item(fh, cache, parent)
+def SX_REF(fh, cache):
+    return process_item(fh, cache)
 
-def SX_UNDEF(fh, cache, parent):
+def SX_UNDEF(fh, cache):
     return None
 
-def SX_DOUBLE(fh, cache, parent):
+def SX_DOUBLE(fh, cache):
     return unpack('d', fh.read(8))[0]
 
-def SX_BYTE(fh, cache, parent):
+def SX_BYTE(fh, cache):
     return unpack('B', fh.read(1))[0] - 128
 
-def SX_SCALAR(fh, cache, parent):
+def SX_SCALAR(fh, cache):
     size = unpack('B', fh.read(1))[0]
     return fh.read(size)
 
-def SX_UTF8STR(fh, cache, parent):
-    return SX_SCALAR(fh, cache, parent)
+def SX_UTF8STR(fh, cache):
+    return SX_SCALAR(fh, cache)
 
-def SX_TIED_ARRAY(fh, cache, parent):
-    return process_item(fh, cache, parent)
+def SX_TIED_ARRAY(fh, cache):
+    return process_item(fh, cache)
 
-def SX_TIED_HASH(fh, cache, parent):
-    return SX_TIED_ARRAY(fh, cache, parent)
+def SX_TIED_HASH(fh, cache):
+    return SX_TIED_ARRAY(fh, cache)
 
-def SX_TIED_SCALAR(fh, cache, parent):
-    return SX_TIED_ARRAY(fh, cache, parent)
+def SX_TIED_SCALAR(fh, cache):
+    return SX_TIED_ARRAY(fh, cache)
 
-def SX_SV_UNDEF(fh, cache, parent):
+def SX_SV_UNDEF(fh, cache):
     return None
 
-def SX_BLESS(fh, cache, parent):
+def SX_BLESS(fh, cache):
     size = unpack('B', fh.read(1))[0]
     package_name = fh.read(size)
     cache['classes'].append(package_name)
-    return process_item(fh, cache, parent)
+    return process_item(fh, cache)
 
-def SX_IX_BLESS(fh, cache, parent):
+def SX_IX_BLESS(fh, cache):
     indx = unpack('B', fh.read(1))[0]
     package_name = cache['classes'][indx]
-    return process_item(fh, cache, parent)
+    return process_item(fh, cache)
 
-def SX_OVERLOAD(fh, cache, parent):
-    return process_item(fh, cache, parent)
+def SX_OVERLOAD(fh, cache):
+    return process_item(fh, cache)
 
-def SX_TIED_KEY(fh, cache, parent):
-    data = process_item(fh, cache, parent)
-    key  = process_item(fh, cache, parent)
+def SX_TIED_KEY(fh, cache):
+    data = process_item(fh, cache)
+    key  = process_item(fh, cache)
     return data
     
-def SX_TIED_IDX(fh, cache, parent):
-    data = process_item(fh, cache, parent)
+def SX_TIED_IDX(fh, cache):
+    data = process_item(fh, cache)
     indx_in_array = unpack('i', fh.read(4))[0]
     return data
 
@@ -155,7 +155,7 @@ def handle_sx_object_refs(cache, data):
             data[k] = cache['objects'][item[1]]
     return data
 
-def process_item(fh, cache, parent=None):
+def process_item(fh, cache):
     data = None
     magic_type = fh.read(1)
     if magic_type in engine:
@@ -164,7 +164,7 @@ def process_item(fh, cache, parent=None):
         if magic_type not in ['\x00', '\x0b', '\x0c', '\x0d']:
             cache['objects'].append(data)
             i = len(cache['objects']) - 1
-        data = engine[magic_type](fh, cache, parent)
+        data = engine[magic_type](fh, cache)
 
         if i is not None:
             cache['objects'][i] = data
