@@ -3,7 +3,7 @@
 import unittest
 import glob
 import traceback
-from re import match
+from re import match, search
 from os.path import basename
 
 from storable import thaw
@@ -30,7 +30,25 @@ class TestStorable(unittest.TestCase):
         for infile in sorted(glob.glob('resources/i686-linux/*/*_nfreeze.storable')):
             self.do_test(infile)
 
-    def load_objects(self, infile):
+    def test_ppc_linux_freeze(self):
+        for infile in sorted(glob.glob('resources/ppc-linux/*/*_freeze.storable')):
+            m = search(r'(017|021|023|025|027|029|045|053)_', infile)
+            if m == None:
+                outfile = basename(infile)
+                group = match(r"^(\d+)_(.*)_\d+\.\d+_.*_(freeze|nfreeze)\.storable$", outfile)
+                type       = group.group(3)
+                testcasenr = int(group.group(1))+1
+                testcase   = group.group(2)
+                outfile    = 'resources/results/' + '%03d'%testcasenr + '_' + testcase + '.py'
+                self.do_test(infile, outfile)
+
+    def test_ppc_linux_freeze_special_cases(self):
+        for infile in sorted(glob.glob('resources/ppc-linux/*/*_freeze.storable')):
+            m = search(r'(017|021|023|025|027|029|045|053)_', infile)
+            if m != None:
+                self.do_test(infile)
+
+    def load_objects(self, infile, outfile=None):
 
         #print('reading from '+infile)
         infh = open(infile, 'rb')
@@ -46,10 +64,11 @@ class TestStorable(unittest.TestCase):
         result_we_need = None
 
         # read the to-be-result in
-        outfile = basename(infile)
-        group = match(r"(.*)_\d+\.\d+", outfile)
-        testcase = group.group(1)
-        outfile = 'resources/results/' + testcase + '.py'
+        if not outfile:
+            outfile = basename(infile)
+            group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze)\.storable$", outfile)
+            testcase = group.group(1)
+            outfile  = 'resources/results/' + testcase + '.py'
         try:
             outfh = open(outfile,'rb')
             result_we_need = outfh.read()
@@ -58,11 +77,11 @@ class TestStorable(unittest.TestCase):
         except Exception,e:
             traceback.print_exc(e)
 
-        return (testcase, outfile, result_we_need, data)
+        return (outfile, result_we_need, data)
 
-    def do_test(self, infile):
+    def do_test(self, infile, outfile=None):
 
-        testcase, outfile, result_we_need, data = self.load_objects(infile)
+        outfile, result_we_need, data = self.load_objects(infile, outfile)
 
         # dump it
         if False:
