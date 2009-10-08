@@ -11,27 +11,27 @@ from storable import thaw
 class TestStorable(unittest.TestCase):
 
     def test_sun4_solaris_nfreeze(self):
-        for infile in sorted(glob.glob('resources/sun4-solaris/*/*_nfreeze.storable')):
+        for infile in sorted(glob.glob('t/resources/sun4-solaris/*/*_nfreeze.storable')):
             self.do_test(infile)
 
     def test_ppc_linux_nfreeze(self):
-        for infile in sorted(glob.glob('resources/ppc-linux/*/*_nfreeze.storable')):
+        for infile in sorted(glob.glob('t/resources/ppc-linux/*/*_nfreeze.storable')):
             self.do_test(infile)
 
     def test_MSWin32_nfreeze(self):
-        for infile in sorted(glob.glob('resources/MSWin32/*/*_nfreeze.storable')):
+        for infile in sorted(glob.glob('t/resources/MSWin32/*/*_nfreeze.storable')):
             self.do_test(infile)
 
     def test_x86_64_linux_nfreeze(self):
-        for infile in sorted(glob.glob('resources/x86_64-linux/*/*_nfreeze.storable')):
+        for infile in sorted(glob.glob('t/resources/x86_64-linux/*/*_nfreeze.storable')):
             self.do_test(infile)
 
     def test_i686_linux_nfreeze(self):
-        for infile in sorted(glob.glob('resources/i686-linux/*/*_nfreeze.storable')):
+        for infile in sorted(glob.glob('t/resources/i686-linux/*/*_nfreeze.storable')):
             self.do_test(infile)
 
     def test_ppc_linux_freeze(self):
-        for infile in sorted(glob.glob('resources/ppc-linux/*/*_freeze.storable')):
+        for infile in sorted(glob.glob('t/resources/ppc-linux/*/*_freeze.storable')):
             m = search(r'(017|021|023|025|027|029|045|053)_', infile)
             if m == None:
                 outfile = basename(infile)
@@ -39,11 +39,11 @@ class TestStorable(unittest.TestCase):
                 type       = group.group(3)
                 testcasenr = int(group.group(1))+1
                 testcase   = group.group(2)
-                outfile    = 'resources/results/' + '%03d'%testcasenr + '_' + testcase + '.py'
+                outfile    = 't/results/' + '%03d'%testcasenr + '_' + testcase + '.py'
                 self.do_test(infile, outfile)
 
     def test_ppc_linux_freeze_special_cases(self):
-        for infile in sorted(glob.glob('resources/ppc-linux/*/*_freeze.storable')):
+        for infile in sorted(glob.glob('t/resources/ppc-linux/*/*_freeze.storable')):
             m = search(r'(017|021|023|025|027|029|045|053)_', infile)
             if m != None:
                 self.do_test(infile)
@@ -68,7 +68,7 @@ class TestStorable(unittest.TestCase):
             outfile = basename(infile)
             group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze)\.storable$", outfile)
             testcase = group.group(1)
-            outfile  = 'resources/results/' + testcase + '.py'
+            outfile  = 't/results/' + testcase + '.py'
         try:
             outfh = open(outfile,'rb')
             result_we_need = outfh.read()
