@@ -30,19 +30,20 @@ from struct import unpack
 import cStringIO
 
 def SX_OBJECT(fh, cache):
+    # idx's are always big-endian dumped by storable's freeze/nfreeze I think
     i = unpack('>I', fh.read(4))[0]
     cache['has_sx_object'] = True
     return (0, i)
 
 def SX_LSCALAR(fh, cache):
-    size = unpack('>I', fh.read(4))[0]
+    size = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
     return fh.read(size)
 
 def SX_LUTF8STR(fh, cache):
     return SX_LSCALAR(fh, cache)
 
 def SX_ARRAY(fh, cache):
-    size = unpack('>I', fh.read(4))[0]
+    size = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
     data = []
     for i in range(0,size):
         data.append(process_item(fh, cache))
@@ -50,11 +51,11 @@ def SX_ARRAY(fh, cache):
     return data
 
 def SX_HASH(fh, cache):
-    size = unpack('>I', fh.read(4))[0]
+    size = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
     data = {}
     for i in range(0,size):
         value = process_item(fh, cache)
-        size  = unpack('>I', fh.read(4))[0]
+        size  = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
         key   = fh.read(size)
         data[key] = value
 
@@ -67,7 +68,7 @@ def SX_UNDEF(fh, cache):
     return None
 
 def SX_DOUBLE(fh, cache):
-    return unpack('>d', fh.read(8))[0]
+    return unpack(cache['double_unpack_fmt'], fh.read(8))[0]
 
 def SX_BYTE(fh, cache):
     return unpack('B', fh.read(1))[0] - 128
@@ -112,6 +113,7 @@ def SX_TIED_KEY(fh, cache):
     
 def SX_TIED_IDX(fh, cache):
     data = process_item(fh, cache)
+    # idx's are always big-endian dumped by storable's freeze/nfreeze I think
     indx_in_array = unpack('>I', fh.read(4))[0]
     return data
 
@@ -172,17 +174,16 @@ def process_item(fh, cache):
     #print(cache)
     return data
 
-def SX_DOUBLE_REVERSED(fh, cache):
-    return unpack('<d', fh.read(8))[0]
-    
-
 def thaw(frozen_data):
     fh    = cStringIO.StringIO(frozen_data)
-    magic = fh.read(2)
-    if magic == '\x05\x07':
+    magic = fh.read(1)
+    byteorder = '>'
+    if magic == '\x05':
+        version = fh.read(1)
         #print("OK:nfreeze") 
         pass
-    if magic == '\x04\x07':
+    if magic == '\x04':
+        version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
         byteorder = fh.read(size)
         #print("OK:freeze:" + str(byteorder))
@@ -192,11 +193,19 @@ def thaw(frozen_data):
         # 64-bit x86_64:  12345678
         
         if byteorder == '1234' or byteorder == '12345678':
-            engine['\x07'] = SX_DOUBLE_REVERSED
+            byteorder = '<'
+        else:
+            byteorder = '>'
 
         somethingtobeinvestigated = fh.read(4)
 
-    cache = { 'objects' : [], 'classes' : [], 'has_sx_object' : False }
+    cache = { 
+        'objects'           : [],
+        'classes'           : [],
+        'has_sx_object'     : False,
+        'size_unpack_fmt'   : byteorder + 'I',
+        'double_unpack_fmt' : byteorder + 'd'
+    }
     data = process_item(fh, cache)
 
     if cache['has_sx_object']:

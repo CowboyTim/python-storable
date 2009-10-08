@@ -30,8 +30,8 @@ class TestStorable(unittest.TestCase):
         for infile in sorted(glob.glob('t/resources/i686-linux/*/*_nfreeze.storable')):
             self.do_test(infile)
 
-    def test_ppc_linux_freeze(self):
-        for infile in sorted(glob.glob('t/resources/ppc-linux/*/*_freeze.storable')):
+    def test_freeze(self):
+        for infile in sorted(glob.glob('t/resources/*/*/*_freeze.storable')):
             m = search(r'(017|021|023|025|027|029|045|053)_', infile)
             if m == None:
                 outfile = basename(infile)
@@ -42,8 +42,8 @@ class TestStorable(unittest.TestCase):
                 outfile    = 't/results/' + '%03d'%testcasenr + '_' + testcase + '.py'
                 self.do_test(infile, outfile)
 
-    def test_ppc_linux_freeze_special_cases(self):
-        for infile in sorted(glob.glob('t/resources/ppc-linux/*/*_freeze.storable')):
+    def test_freeze_special_cases(self):
+        for infile in sorted(glob.glob('t/resources/*/*/*_freeze.storable')):
             m = search(r'(017|021|023|025|027|029|045|053)_', infile)
             if m != None:
                 self.do_test(infile)
