@@ -179,10 +179,11 @@ def thaw(frozen_data):
         #print("OK:nfreeze") 
         pass
     if magic == '\x04\x07':
-        magic = fh.read(9)
-        if magic == '\x04\x34\x33\x32\x31\x04\x04\x04\x08':
-            #print("OK:freeze") 
-            pass
+        size  = unpack('B', fh.read(1))[0]
+        byteorder = fh.read(size)
+        #print("OK:freeze:" + str(byteorder))
+        somethingtobeinvestigated = fh.read(4)
+        pass
 
     cache = { 'objects' : [], 'classes' : [], 'has_sx_object' : False }
     data = process_item(fh, cache)
