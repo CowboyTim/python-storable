@@ -30,19 +30,19 @@ from struct import unpack
 import cStringIO
 
 def SX_OBJECT(fh, cache):
-    i = unpack('!I', fh.read(4))[0]
+    i = unpack('>I', fh.read(4))[0]
     cache['has_sx_object'] = True
     return (0, i)
 
 def SX_LSCALAR(fh, cache):
-    size = unpack('!I', fh.read(4))[0]
+    size = unpack('>I', fh.read(4))[0]
     return fh.read(size)
 
 def SX_LUTF8STR(fh, cache):
     return SX_LSCALAR(fh, cache)
 
 def SX_ARRAY(fh, cache):
-    size = unpack('!I', fh.read(4))[0]
+    size = unpack('>I', fh.read(4))[0]
     data = []
     for i in range(0,size):
         data.append(process_item(fh, cache))
@@ -50,11 +50,11 @@ def SX_ARRAY(fh, cache):
     return data
 
 def SX_HASH(fh, cache):
-    size = unpack('!I', fh.read(4))[0]
+    size = unpack('>I', fh.read(4))[0]
     data = {}
     for i in range(0,size):
         value = process_item(fh, cache)
-        size  = unpack('!I', fh.read(4))[0]
+        size  = unpack('>I', fh.read(4))[0]
         key   = fh.read(size)
         data[key] = value
 
@@ -67,7 +67,7 @@ def SX_UNDEF(fh, cache):
     return None
 
 def SX_DOUBLE(fh, cache):
-    return unpack('d', fh.read(8))[0]
+    return unpack('>d', fh.read(8))[0]
 
 def SX_BYTE(fh, cache):
     return unpack('B', fh.read(1))[0] - 128
@@ -112,7 +112,7 @@ def SX_TIED_KEY(fh, cache):
     
 def SX_TIED_IDX(fh, cache):
     data = process_item(fh, cache)
-    indx_in_array = unpack('i', fh.read(4))[0]
+    indx_in_array = unpack('>I', fh.read(4))[0]
     return data
 
 # *AFTER* all the subroutines
@@ -172,6 +172,10 @@ def process_item(fh, cache):
     #print(cache)
     return data
 
+def SX_DOUBLE_REVERSED(fh, cache):
+    return unpack('<d', fh.read(8))[0]
+    
+
 def thaw(frozen_data):
     fh    = cStringIO.StringIO(frozen_data)
     magic = fh.read(2)
@@ -182,8 +186,15 @@ def thaw(frozen_data):
         size  = unpack('B', fh.read(1))[0]
         byteorder = fh.read(size)
         #print("OK:freeze:" + str(byteorder))
+
+        # 32-bit ppc:     4321
+        # 32-bit x86:     1234
+        # 64-bit x86_64:  12345678
+        
+        if byteorder == '1234' or byteorder == '12345678':
+            engine['\x07'] = SX_DOUBLE_REVERSED
+
         somethingtobeinvestigated = fh.read(4)
-        pass
 
     cache = { 'objects' : [], 'classes' : [], 'has_sx_object' : False }
     data = process_item(fh, cache)
