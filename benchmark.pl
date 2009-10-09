@@ -3,7 +3,7 @@
 use strict; use warnings;
 
 use Data::Dumper;
-use Storable qw(thaw nfreeze);
+use Storable qw(thaw nfreeze freeze);
 
 use Benchmark;
 
@@ -17,7 +17,7 @@ my $small_data;
 
 #my $a = {a => 'x' x 100, b => 'y' x 50};
 #my @data = map {{%{$a}}} 1..10_000;
-#print thaw(\@data);
+#print freeze(\@data);
 
 my $large_data;
 {
