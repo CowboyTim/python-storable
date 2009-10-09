@@ -39,7 +39,7 @@ my $large_data_freeze;
     close($fh);
 }
 
-timethese(1000, { 
+timethese(500, { 
     small_nfreeze => sub { thaw($small_data_nfreeze) },
     small_freeze  => sub { thaw($small_data_freeze)  },
     large_nfreeze => sub { thaw($large_data_nfreeze) },

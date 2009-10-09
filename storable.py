@@ -141,6 +141,8 @@ engine = {
     '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
 }
 
+exclude_for_cache = set(['\x00', '\x0b', '\x0c', '\x0d'])
+
 def handle_sx_object_refs(cache, data):
     iterateelements = None
     if type(data) is list:
@@ -158,22 +160,20 @@ def handle_sx_object_refs(cache, data):
     return data
 
 def process_item(fh, cache):
-    data = None
     magic_type = fh.read(1)
     if magic_type in engine:
         #print(engine[magic_type])
-        i = None
-        if magic_type not in ['\x00', '\x0b', '\x0c', '\x0d']:
-            cache['objects'].append(data)
-            i = len(cache['objects']) - 1
-        data = engine[magic_type](fh, cache)
-
-        if i is not None:
-            cache['objects'][i] = data
-
-    #print(cache)
-    return data
-
+        if magic_type not in exclude_for_cache:
+            o = cache['objects']
+            o.append(None)
+            i = len(o)-1
+            data = engine[magic_type](fh, cache)
+            o[i] = data
+            return data
+        else:
+            data = engine[magic_type](fh, cache)
+            return data
+            
 def thaw(frozen_data):
     fh    = cStringIO.StringIO(frozen_data)
     magic = fh.read(1)

@@ -33,9 +33,14 @@ def timethese(nr, methods):
                   'nr'    :nr})
 
 
-timethese(1000, {
-    'small_nfreeze' : lambda :storable.thaw(small_data_nfreeze),
-    'small_freeze'  : lambda :storable.thaw(small_data_freeze ),
-    'large_nfreeze' : lambda :storable.thaw(large_data_nfreeze),
-    'large_freeze'  : lambda :storable.thaw(large_data_freeze )
-})
+def run():
+    timethese(500, {
+        'small_nfreeze' : lambda :storable.thaw(small_data_nfreeze),
+        'small_freeze'  : lambda :storable.thaw(small_data_freeze ),
+        'large_nfreeze' : lambda :storable.thaw(large_data_nfreeze),
+        'large_freeze'  : lambda :storable.thaw(large_data_freeze )
+    })
+
+#import cProfile
+#cProfile.run('run()')
+run()
