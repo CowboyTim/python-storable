@@ -26,7 +26,7 @@ def timethese(nr, methods):
         for i in range(0,nr):
             method()
         end   = time()
-        print('%(abbr)15s : %(timing)3.02f wallclock secs @ %(speed).02f/s (n=%(nr)d)'\
+        print('%(abbr)15s : %(timing)7.2f wallclock secs @ %(speed).02f/s (n=%(nr)d)'\
                 %{'abbr'  :k,\
                   'timing':(end - start),\
                   'speed' :(end - start)/nr,\
