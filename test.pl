@@ -11,7 +11,7 @@ use Storable qw(nfreeze freeze);
 
 # make the base path
 my $base = 
-    "$FindBin::Bin/resources/$Config{myarchname}/$Storable::VERSION";
+    "$FindBin::Bin/t/resources/$Config{myarchname}/$Storable::VERSION";
 mkpath($base);
 my $filenames = {};
 my $count     = 0;
