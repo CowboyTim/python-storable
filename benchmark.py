@@ -34,7 +34,7 @@ def timethese(nr, methods):
 
 
 def run():
-    timethese(500, {
+    timethese(100, {
         'small_nfreeze' : lambda :storable.thaw(small_data_nfreeze),
         'small_freeze'  : lambda :storable.thaw(small_data_freeze ),
         'large_nfreeze' : lambda :storable.thaw(large_data_nfreeze),
