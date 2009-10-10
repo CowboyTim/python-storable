@@ -141,7 +141,7 @@ engine = {
     '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
 }
 
-exclude_for_cache = set(['\x00', '\x0b', '\x0c', '\x0d'])
+exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True})
 
 def handle_sx_object_refs(cache, data):
     iterateelements = None
@@ -161,18 +161,14 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
-    if magic_type in engine:
-        #print(engine[magic_type])
-        if magic_type not in exclude_for_cache:
-            o = cache['objects']
-            o.append(None)
-            i = len(o)-1
-            data = engine[magic_type](fh, cache)
-            o[i] = data
-            return data
-        else:
-            data = engine[magic_type](fh, cache)
-            return data
+    if magic_type not in exclude_for_cache:
+        i = cache['objectnr']
+        cache['objectnr'] = cache['objectnr']+1
+        cache['objects'][i] = engine[magic_type](fh, cache)
+        return cache['objects'][i]
+    else:
+        #return doItem(fh, cache, magic_type)
+        return engine[magic_type](fh, cache)
             
 def thaw(frozen_data):
     fh    = cStringIO.StringIO(frozen_data)
@@ -200,7 +196,8 @@ def thaw(frozen_data):
         somethingtobeinvestigated = fh.read(4)
 
     cache = { 
-        'objects'           : [],
+        'objects'           : {},
+        'objectnr'          : 0,
         'classes'           : [],
         'has_sx_object'     : False,
         'size_unpack_fmt'   : byteorder + 'I',
