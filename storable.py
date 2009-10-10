@@ -117,30 +117,35 @@ def SX_TIED_IDX(fh, cache):
     return data
 
 # *AFTER* all the subroutines
-engine = {
-    '\x00': SX_OBJECT,      # ( 0): Already stored object
-    '\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
-    '\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
-    '\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
-    '\x04': SX_REF,         # ( 4): Reference to object forthcoming
-    '\x05': SX_UNDEF,       # ( 5): Undefined scalar
-    '\x07': SX_DOUBLE,      # ( 7): Double forthcoming
-    '\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
-    '\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
-    '\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
-    '\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
-    '\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
-    '\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
-    '\x11': SX_BLESS,       # (17): Object is blessed
-    '\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
-    '\x14': SX_OVERLOAD,    # (20): Overloaded reference
-    '\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
-    '\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
-    '\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
-    '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
-}
+engine = [
+    SX_OBJECT,      # ( 0): Already stored object
+    SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
+    SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
+    SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
+    SX_REF,         # ( 4): Reference to object forthcoming
+    SX_UNDEF,       # ( 5): Undefined scalar
+    None,
+    SX_DOUBLE,      # ( 7): Double forthcoming
+    SX_BYTE,        # ( 8): (signed) byte forthcoming
+    None,
+    SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
+    SX_TIED_ARRAY,  # (11): Tied array forthcoming
+    SX_TIED_HASH,   # (12): Tied hash forthcoming
+    SX_TIED_SCALAR, # (13): Tied scalar forthcoming
+    SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
+    None,
+    None,
+    SX_BLESS,       # (17): Object is blessed
+    SX_IX_BLESS,    # (18): Object is blessed, classname given by index
+    None,
+    SX_OVERLOAD,    # (20): Overloaded reference
+    SX_TIED_KEY,    # (21): Tied magic key forthcoming
+    SX_TIED_IDX,    # (22): Tied magic index forthcoming
+    SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
+    SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
+]
 
-exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True})
+exclude_for_cache = dict({0:True, 11:True, 12:True, 13:True})
 
 def handle_sx_object_refs(cache, data):
     iterateelements = None
@@ -159,8 +164,7 @@ def handle_sx_object_refs(cache, data):
     return data
 
 def process_item(fh, cache):
-    magic_type = fh.read(1)
-    #print('magic:'+str(magic_type))
+    magic_type = unpack('B',fh.read(1))[0]
     if magic_type not in exclude_for_cache:
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
