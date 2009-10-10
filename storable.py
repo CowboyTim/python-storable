@@ -29,7 +29,7 @@
 from struct import unpack
 import cStringIO
 
-exclude_for_cache = set(['\x00', '\x0b', '\x0c', '\x0d'])
+exclude_for_cache = dict({'\x00': True, '\x0b': True, '\x0c': True, '\x0d': True})
 
 class Storable():
 
@@ -170,19 +170,41 @@ class Storable():
                 data[k] = self.objects[item[1]]
         return data
 
+    def doItem(self, magic_type):
+        if   magic_type == '\x00': return self.SX_OBJECT()
+        elif magic_type == '\x01': return self.SX_LSCALAR()     # ( 1): Scalar (large binary) follows (length, data)
+        elif magic_type == '\x02': return self.SX_ARRAY()       # ( 2): Array forthcoming (size, item list)
+        elif magic_type == '\x03': return self.SX_HASH()        # ( 3): Hash forthcoming (size, key/value pair list)
+        elif magic_type == '\x04': return self.SX_REF()         # ( 4): Reference to object forthcoming
+        elif magic_type == '\x05': return self.SX_UNDEF()       # ( 5): Undefined scalar
+        elif magic_type == '\x07': return self.SX_DOUBLE()      # ( 7): Double forthcoming
+        elif magic_type == '\x08': return self.SX_BYTE()        # ( 8): (signed) byte forthcoming
+        elif magic_type == '\x0a': return self.SX_SCALAR()      # (10): Scalar (binary, small) follows (length, data)
+        elif magic_type == '\x0b': return self.SX_TIED_ARRAY()  # (11): Tied array forthcoming
+        elif magic_type == '\x0c': return self.SX_TIED_HASH()   # (12): Tied hash forthcoming
+        elif magic_type == '\x0d': return self.SX_TIED_SCALAR() # (13): Tied scalar forthcoming
+        elif magic_type == '\x0e': return self.SX_SV_UNDEF()    # (14): Perl's immortal PL_sv_undef
+        elif magic_type == '\x11': return self.SX_BLESS()       # (17): Object is blessed
+        elif magic_type == '\x12': return self.SX_IX_BLESS()    # (18): Object is blessed, classname given by index
+        elif magic_type == '\x14': return self.SX_OVERLOAD()    # (20): Overloaded reference
+        elif magic_type == '\x15': return self.SX_TIED_KEY()    # (21): Tied magic key forthcoming
+        elif magic_type == '\x16': return self.SX_TIED_IDX()    # (22): Tied magic index forthcoming
+        elif magic_type == '\x17': return self.SX_UTF8STR()     # (23): UTF-8 string forthcoming (small)
+        elif magic_type == '\x18': return self.SX_LUTF8STR()    # (24): UTF-8 string forthcoming (large)
+        else:
+            raise
+
     def process_item(self):
         magic_type = self.fh.read(1)
-        if magic_type in engine:
-            #print(engine[magic_type])
-            if magic_type not in exclude_for_cache:
-                i = self.objectnr
-                self.objectnr = self.objectnr+1
-                data = engine[magic_type](self)
-                self.objects[i] = data
-                return data
-            else:
-                data = engine[magic_type](self)
-                return data
+        #print(engine[magic_type])
+        if magic_type not in exclude_for_cache:
+            i = self.objectnr
+            self.objectnr = self.objectnr+1
+            data = self.doItem(magic_type)
+            self.objects[i] = data
+            return data
+        else:
+            return self.doItem(magic_type)
             
 def thaw(frozen_data):
     s = Storable(frozen_data)
@@ -192,29 +214,3 @@ def thaw(frozen_data):
         s.handle_sx_object_refs(data)
     
     return data
-
-engine = {
-    '\x00': Storable.SX_OBJECT,      # ( 0): Already stored object
-    '\x01': Storable.SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
-    '\x02': Storable.SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
-    '\x03': Storable.SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
-    '\x04': Storable.SX_REF,         # ( 4): Reference to object forthcoming
-    '\x05': Storable.SX_UNDEF,       # ( 5): Undefined scalar
-    '\x07': Storable.SX_DOUBLE,      # ( 7): Double forthcoming
-    '\x08': Storable.SX_BYTE,        # ( 8): (signed) byte forthcoming
-    '\x0a': Storable.SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
-    '\x0b': Storable.SX_TIED_ARRAY,  # (11): Tied array forthcoming
-    '\x0c': Storable.SX_TIED_HASH,   # (12): Tied hash forthcoming
-    '\x0d': Storable.SX_TIED_SCALAR, # (13): Tied scalar forthcoming
-    '\x0e': Storable.SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
-    '\x11': Storable.SX_BLESS,       # (17): Object is blessed
-    '\x12': Storable.SX_IX_BLESS,    # (18): Object is blessed, classname given by index
-    '\x14': Storable.SX_OVERLOAD,    # (20): Overloaded reference
-    '\x15': Storable.SX_TIED_KEY,    # (21): Tied magic key forthcoming
-    '\x16': Storable.SX_TIED_IDX,    # (22): Tied magic index forthcoming
-    '\x17': Storable.SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
-    '\x18': Storable.SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
-}
-
-
-
