@@ -161,13 +161,13 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
+    #print('magic:'+str(magic_type))
     if magic_type not in exclude_for_cache:
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
         cache['objects'][i] = engine[magic_type](fh, cache)
         return cache['objects'][i]
     else:
-        #return doItem(fh, cache, magic_type)
         return engine[magic_type](fh, cache)
             
 def thaw(frozen_data):
