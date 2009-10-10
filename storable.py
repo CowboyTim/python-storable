@@ -66,92 +66,92 @@ class Storable():
         self.double_unpack_fmt = byteorder + 'd'
         self.fh                = fh
 
-    def SX_OBJECT(self,fh):
+    def SX_OBJECT(self):
         # idx's are always big-endian dumped by storable's freeze/nfreeze I think
-        i = unpack('>I', fh.read(4))[0]
+        i = unpack('>I', self.fh.read(4))[0]
         self.has_sx_object = True
         return (0, i)
 
-    def SX_LSCALAR(self,fh):
-        size = unpack(self.size_unpack_fmt, fh.read(4))[0]
-        return fh.read(size)
+    def SX_LSCALAR(self):
+        size = unpack(self.size_unpack_fmt, self.fh.read(4))[0]
+        return self.fh.read(size)
 
-    def SX_LUTF8STR(self,fh):
-        return self.SX_LSCALAR(fh)
+    def SX_LUTF8STR(self):
+        return self.SX_LSCALAR()
 
-    def SX_ARRAY(self,fh):
-        size = unpack(self.size_unpack_fmt, fh.read(4))[0]
+    def SX_ARRAY(self):
+        size = unpack(self.size_unpack_fmt, self.fh.read(4))[0]
         data = []
         for i in range(0,size):
-            data.append(self.process_item(fh))
+            data.append(self.process_item())
 
         return data
 
-    def SX_HASH(self,fh):
-        size = unpack(self.size_unpack_fmt, fh.read(4))[0]
+    def SX_HASH(self):
+        size = unpack(self.size_unpack_fmt, self.fh.read(4))[0]
         data = {}
         for i in range(0,size):
-            value = self.process_item(fh)
-            size  = unpack(self.size_unpack_fmt, fh.read(4))[0]
-            key   = fh.read(size)
+            value = self.process_item()
+            size  = unpack(self.size_unpack_fmt, self.fh.read(4))[0]
+            key   = self.fh.read(size)
             data[key] = value
 
         return data
 
-    def SX_REF(self,fh):
-        return self.process_item(fh)
+    def SX_REF(self):
+        return self.process_item()
 
-    def SX_UNDEF(self,fh):
+    def SX_UNDEF(self):
         return None
 
-    def SX_DOUBLE(self,fh):
-        return unpack(self.double_unpack_fmt, fh.read(8))[0]
+    def SX_DOUBLE(self):
+        return unpack(self.double_unpack_fmt, self.fh.read(8))[0]
 
-    def SX_BYTE(self,fh):
-        return unpack('B', fh.read(1))[0] - 128
+    def SX_BYTE(self):
+        return unpack('B', self.fh.read(1))[0] - 128
 
-    def SX_SCALAR(self,fh):
-        size = unpack('B', fh.read(1))[0]
-        return fh.read(size)
+    def SX_SCALAR(self):
+        size = unpack('B', self.fh.read(1))[0]
+        return self.fh.read(size)
 
-    def SX_UTF8STR(self,fh):
-        return self.SX_SCALAR(fh)
+    def SX_UTF8STR(self):
+        return self.SX_SCALAR()
 
-    def SX_TIED_ARRAY(self,fh):
-        return self.process_item(fh)
+    def SX_TIED_ARRAY(self):
+        return self.process_item()
 
-    def SX_TIED_HASH(self,fh):
-        return self.SX_TIED_ARRAY(fh)
+    def SX_TIED_HASH(self):
+        return self.SX_TIED_ARRAY()
 
-    def SX_TIED_SCALAR(self,fh):
-        return self.SX_TIED_ARRAY(fh)
+    def SX_TIED_SCALAR(self):
+        return self.SX_TIED_ARRAY()
 
-    def SX_SV_UNDEF(self,fh):
+    def SX_SV_UNDEF(self):
         return None
 
-    def SX_BLESS(self,fh):
-        size = unpack('B', fh.read(1))[0]
-        package_name = fh.read(size)
+    def SX_BLESS(self):
+        size = unpack('B', self.fh.read(1))[0]
+        package_name = self.fh.read(size)
         self.classes.append(package_name)
-        return self.process_item(fh)
+        return self.process_item()
 
-    def SX_IX_BLESS(self,fh):
-        indx = unpack('B', fh.read(1))[0]
+    def SX_IX_BLESS(self):
+        indx = unpack('B', self.fh.read(1))[0]
         package_name = self.classes[indx]
-        return self.process_item(fh)
+        return self.process_item()
 
-    def SX_OVERLOAD(self,fh):
-        return self.process_item(fh)
+    def SX_OVERLOAD(self):
+        return self.process_item()
 
-    def SX_TIED_KEY(self,fh):
-        data = self.process_item(fh)
-        key  = self.process_item(fh)
+    def SX_TIED_KEY(self):
+        data = self.process_item()
+        key  = self.process_item()
         return data
         
-    def SX_TIED_IDX(self,fh):
-        data = self.process_item(fh)
+    def SX_TIED_IDX(self):
+        data = self.process_item()
         # idx's are always big-endian dumped by storable's freeze/nfreeze I think
-        indx_in_array = unpack('>I', fh.read(4))[0]
+        indx_in_array = unpack('>I', self.fh.read(4))[0]
         return data
 
     def handle_sx_object_refs(self, data):
@@ -170,23 +170,23 @@ class Storable():
                 data[k] = self.objects[item[1]]
         return data
 
-    def process_item(self, fh):
-        magic_type = fh.read(1)
+    def process_item(self):
+        magic_type = self.fh.read(1)
         if magic_type in engine:
             #print(engine[magic_type])
             if magic_type not in exclude_for_cache:
                 i = self.objectnr
                 self.objectnr = self.objectnr+1
-                data = engine[magic_type](self,fh)
+                data = engine[magic_type](self)
                 self.objects[i] = data
                 return data
             else:
-                data = engine[magic_type](self,fh)
+                data = engine[magic_type](self)
                 return data
             
 def thaw(frozen_data):
     s = Storable(frozen_data)
-    data = s.process_item(s.fh)
+    data = s.process_item()
 
     if s.has_sx_object:
         s.handle_sx_object_refs(data)
