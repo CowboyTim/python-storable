@@ -29,6 +29,9 @@
 from struct import unpack
 import cStringIO
 
+def _read_size(fh, cache):
+    return unpack(cache['size_unpack_fmt'], fh.read(4))[0]
+
 def SX_OBJECT(fh, cache):
     # idx's are always big-endian dumped by storable's freeze/nfreeze I think
     i = unpack('>I', fh.read(4))[0]
@@ -36,27 +39,23 @@ def SX_OBJECT(fh, cache):
     return (0, i)
 
 def SX_LSCALAR(fh, cache):
-    size = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
-    return fh.read(size)
+    return fh.read(_read_size(fh, cache))
 
 def SX_LUTF8STR(fh, cache):
     return SX_LSCALAR(fh, cache)
 
 def SX_ARRAY(fh, cache):
-    size = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
     data = []
-    for i in range(0,size):
+    for i in range(0,_read_size(fh, cache)):
         data.append(process_item(fh, cache))
 
     return data
 
 def SX_HASH(fh, cache):
-    size = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
     data = {}
-    for i in range(0,size):
+    for i in range(0,_read_size(fh, cache)):
         value = process_item(fh, cache)
-        size  = unpack(cache['size_unpack_fmt'], fh.read(4))[0]
-        key   = fh.read(size)
+        key   = fh.read(_read_size(fh, cache))
         data[key] = value
 
     return data
