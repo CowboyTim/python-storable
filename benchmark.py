@@ -3,22 +3,6 @@
 from time import time
 import storable
 
-fh = open("t/resources/x86_64-linux/2.18/050_complex06_2.18_x86_64-linux_nfreeze.storable", "rb")
-small_data_nfreeze = fh.read()
-fh.close()
-
-fh = open("t/resources/x86_64-linux/2.18/049_complex06_2.18_x86_64-linux_freeze.storable", "rb")
-small_data_freeze = fh.read()
-fh.close()
-
-fh = open("t/large_simple01_nfreeze.storable", "rb")
-large_data_nfreeze = fh.read()
-fh.close()
-
-fh = open("t/large_simple01_freeze.storable", "rb")
-large_data_freeze = fh.read()
-fh.close()
-
 def timethese(nr, methods):
     print('Benchmark: timing '+str(nr)+' iterations of '+', '.join(methods.iterkeys())+'...')
     for k,method in methods.iteritems():
@@ -34,6 +18,22 @@ def timethese(nr, methods):
 
 
 def run():
+    fh = open("t/resources/x86_64-linux/2.18/050_complex06_2.18_x86_64-linux_nfreeze.storable", "rb")
+    small_data_nfreeze = fh.read()
+    fh.close()
+
+    fh = open("t/resources/x86_64-linux/2.18/049_complex06_2.18_x86_64-linux_freeze.storable", "rb")
+    small_data_freeze = fh.read()
+    fh.close()
+
+    fh = open("t/large_simple01_nfreeze.storable", "rb")
+    large_data_nfreeze = fh.read()
+    fh.close()
+
+    fh = open("t/large_simple01_freeze.storable", "rb")
+    large_data_freeze = fh.read()
+    fh.close()
+
     timethese(100, {
         'small_nfreeze' : lambda :storable.thaw(small_data_nfreeze),
         'small_freeze'  : lambda :storable.thaw(small_data_freeze ),
@@ -43,4 +43,14 @@ def run():
 
 #import cProfile
 #cProfile.run('run()')
+# import threading
+# tl = []
+# for i in range(0,4):
+#     print("making thread:"+str(i))
+#     t = threading.Thread(target=run,args=())
+#     t.start()
+#     tl.append(t)
+# 
+# for t in tl:
+#     t.join()
 run()
