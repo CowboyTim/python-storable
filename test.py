@@ -31,26 +31,38 @@ class TestStorable(unittest.TestCase):
             self.do_test(infile)
 
     def test_freeze(self):
+        special_tests = {}
+        for result in sorted(glob.glob('t/results/*.freeze.py')):
+            result = basename(result)
+            result = search(r'(.*)\.freeze\.py', result).group(1)
+            special_tests[result] = 1
+
         for infile in sorted(glob.glob('t/resources/*/*/*_freeze.storable')):
-            m = search(r'(017|021|023|025|027|029|045|053)_', infile)
-            if m == None:
-                outfile = basename(infile)
-                group = match(r"^(\d+)_(.*)_\d+\.\d+_.*_(freeze|nfreeze)\.storable$", outfile)
-                type       = group.group(3)
-                testcasenr = int(group.group(1))+1
-                testcase   = group.group(2)
-                outfile    = 't/results/' + '%03d'%testcasenr + '_' + testcase + '.py'
+            outfile = basename(infile)
+            group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze)\.storable$", outfile)
+            testcase = group.group(1)
+            if testcase not in special_tests:
+                outfile  = 't/results/' + testcase + '.py'
                 self.do_test(infile, outfile)
 
     def test_freeze_special_cases(self):
+        special_tests = {}
+        for result in sorted(glob.glob('t/results/*.freeze.py')):
+            result = basename(result)
+            result = search(r'(.*)\.freeze\.py', result).group(1)
+            special_tests[result] = 1
+
         for infile in sorted(glob.glob('t/resources/*/*/*_freeze.storable')):
-            m = search(r'(017|021|023|025|027|029|045|053)_', infile)
-            if m != None:
-                self.do_test(infile)
+            outfile = basename(infile)
+            group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze)\.storable$", outfile)
+            testcase = group.group(1)
+            if testcase in special_tests:
+                outfile  = 't/results/' + testcase + '.freeze.py'
+                self.do_test(infile, outfile)
 
     def load_objects(self, infile, outfile=None):
 
-        #print('reading from '+infile)
+        print('reading from infile:'+infile+',outfile:'+str(outfile))
         infh = open(infile, 'rb')
         data = infh.read()
         infh.close()
@@ -94,7 +106,7 @@ class TestStorable(unittest.TestCase):
         try:
             self.assertEqual(data, result_we_need)
         except AssertionError, e:
-            print('FILE: '+infile)
+            print('infile: '+str(infile)+' ,outfile: '+str(outfile))
             raise e
 
     
