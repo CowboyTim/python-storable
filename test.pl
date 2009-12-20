@@ -183,8 +183,8 @@ save_sample('ref04', \\\\@array);
 
 sub save_sample {
     my ($what, $data) = @_;
+    $count++;
     for my $type (qw(freeze nfreeze)){
-        $count++;
         my $filename =
             "$base/".sprintf('%03d', $count)."_${what}_".
             "${Storable::VERSION}_$Config{myarchname}_${type}.storable";
