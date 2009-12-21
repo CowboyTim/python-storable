@@ -6,7 +6,7 @@ import traceback
 from re import match, search
 from os.path import basename
 
-from storable import thaw
+import storable
 
 class TestStorable(unittest.TestCase):
 
@@ -60,18 +60,24 @@ class TestStorable(unittest.TestCase):
                 outfile  = 't/results/' + testcase + '.freeze.py'
                 self.do_test(infile, outfile)
 
-    def load_objects(self, infile, outfile=None):
+    def load_objects(infile):
 
-        print('reading from infile:'+infile+',outfile:'+str(outfile))
+        print('reading from infile:'+infile)
         infh = open(infile, 'rb')
         data = infh.read()
         infh.close()
 
         # thaw() it
         try:
-            data = str(thaw(data))
+            data = str(storable.thaw(data))
         except Exception,e:
             traceback.print_exc(e)
+
+        return data
+
+    def do_test(self, infile, outfile=None, deserializer=load_objects ):
+
+        data = deserializer(infile)
 
         result_we_need = None
 
@@ -88,12 +94,6 @@ class TestStorable(unittest.TestCase):
             outfh.close()
         except Exception,e:
             traceback.print_exc(e)
-
-        return (outfile, result_we_need, data)
-
-    def do_test(self, infile, outfile=None):
-
-        outfile, result_we_need, data = self.load_objects(infile, outfile)
 
         # dump it
         if False:
