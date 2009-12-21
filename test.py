@@ -8,10 +8,13 @@ from os.path import basename
 
 import storable
 
-# search for the special tests where freeze <-> nfreeze (same for
-# store/nstore). Those tests really do have a seperate result file. In such a
-# case, we take the other .store.py file instead of the plain .py file as a
-# result to compare with
+nr_of_tests = 36
+src = 't/resources'
+
+# search for the special tests where the freeze result is not the same as the
+# nfreeze result (same for store/nstore). Those tests really do have a seperate
+# result file. In such a case, we take the other .store.py file instead of the
+# plain .py file as a result to compare with
 
 special_tests = {}
 for result in sorted(glob.glob('t/results/*.freeze.py')):
@@ -32,32 +35,28 @@ def determine_outfile(infile):
 class TestStorable(unittest.TestCase):
 
     def test_sun4_solaris_nfreeze(self):
-        for infile in sorted(glob.glob('t/resources/sun4-solaris/*/*_nfreeze.storable')):
-            self.do_test(infile)
+        self.run_tests(glob.glob(src+'/sun4-solaris/*/*_nfreeze.storable'))
 
     def test_ppc_linux_nfreeze(self):
-        for infile in sorted(glob.glob('t/resources/ppc-linux/*/*_nfreeze.storable')):
-            self.do_test(infile)
+        self.run_tests(glob.glob(src+'/ppc-linux/*/*_nfreeze.storable'), nr=62)
 
     def test_MSWin32_nfreeze(self):
-        for infile in sorted(glob.glob('t/resources/MSWin32/*/*_nfreeze.storable')):
-            self.do_test(infile)
+        self.run_tests(glob.glob(src+'/MSWin32/*/*_nfreeze.storable'))
 
     def test_x86_64_linux_nfreeze(self):
-        for infile in sorted(glob.glob('t/resources/x86_64-linux/*/*_nfreeze.storable')):
-            self.do_test(infile)
+        self.run_tests(glob.glob(src+'/x86_64-linux/*/*_nfreeze.storable'))
 
     def test_i686_linux_nfreeze(self):
-        for infile in sorted(glob.glob('t/resources/i686-linux/*/*_nfreeze.storable')):
-            self.do_test(infile)
+        self.run_tests(glob.glob(src+'/i686-linux/*/*_nfreeze.storable'))
 
     def test_x86_64_linux_store(self):
-        for infile in sorted(glob.glob('t/resources/x86_64-linux/*/*_store.storable')):
-            self.do_test(infile, deserializer=lambda f:str(storable.retrieve(f)))
+        self.run_tests(glob.glob(src+'/x86_64-linux/*/*_store.storable'), deserializer=lambda f:str(storable.retrieve(f)))
+
+    def test_x86_64_linux_store(self):
+        self.run_tests(glob.glob(src+'/x86_64-linux/*/*_nstore.storable'), deserializer=lambda f:str(storable.retrieve(f)))
 
     def test_freeze(self):
-        for infile in sorted(glob.glob('t/resources/*/*/*_freeze.storable')):
-            self.do_test(infile)
+        self.run_tests(glob.glob(src+'/*/*/*_freeze.storable'),nr=206)
 
     def mythaw(infile):
 
@@ -74,7 +73,14 @@ class TestStorable(unittest.TestCase):
 
         return data
 
-    def do_test(self, infile, deserializer=mythaw):
+    def run_tests(self, files, deserializer=mythaw, nr=nr_of_tests):
+        count = 0
+        for infile in sorted(files):
+            self.do_test(infile, deserializer)
+            count = count + 1
+        self.assertEqual(count, nr)
+
+    def do_test(self, infile, deserializer):
 
         data = deserializer(infile)
 
