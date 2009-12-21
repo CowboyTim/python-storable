@@ -7,7 +7,7 @@ use Fatal qw(open);
 use File::Path qw(mkpath);
 use Config;
 
-use Storable qw(nfreeze freeze);
+use Storable qw(nfreeze freeze nstore store);
 
 # make the base path
 my $base = 
@@ -153,8 +153,8 @@ save_sample('ref04', \\\\@array);
         bless({}, 'Aa::Bb'),
         bless([], 'Aa::Bb'),
         bless(\[], 'Aa::Bb'),
-        bless(\my $test, 'Aa::Bb'),
-        bless(\my $test, 'Aa::Cc'),
+        bless(\my $test1, 'Aa::Bb'),
+        bless(\my $test2, 'Aa::Cc'),
         bless(['TestA'], 'Aa::Cc'),
         bless(['TestB'], 'Aa::Dd'),
         bless(['TestC'], 'Aa::Cc'),
@@ -201,6 +201,22 @@ sub save_sample {
         open(my $fh, ">", $filename);
         print $fh $a;
         close($fh);
+    }
+
+    for my $type (qw(store nstore)){
+        my $filename =
+            "$base/".sprintf('%03d', $count)."_${what}_".
+            "${Storable::VERSION}_$Config{myarchname}_${type}.storable";
+
+        print "saving sample $what for $type to $filename\n";
+        die "Duplicate filename $filename\n"
+            if exists $filenames->{$filename};
+        $filenames->{$filename} = 1;
+        my $a;
+        {
+            no strict 'refs';
+            $a = &$type($data, $filename);
+        }
     }
 }
 
