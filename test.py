@@ -9,7 +9,58 @@ from os.path import basename
 import storable
 
 nr_of_tests = 36
+
+expected = {
+    'i686-linux'   : {
+        '2.15' : { 
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : 0,
+            'nstore'  : 0
+        }
+    },
+    'MSWin32'      : {
+        '2.15' : { 
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : 0,
+            'nstore'  : 0
+        }
+    },
+    'ppc-linux'    : {
+        '2.18' : { 
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : 0,
+            'nstore'  : 0
+        },
+        '2.21' : { 
+            'nfreeze' : nr_of_tests -10,
+            'freeze'  : nr_of_tests -10,
+            'store'   : 0,
+            'nstore'  : 0
+        }
+    },
+    'sun4-solaris' : {
+        '2.08' : { 
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : 0,
+            'nstore'  : 0
+        }
+    },
+    'x86_64-linux' : {
+        '2.18' : { 
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : nr_of_tests,
+            'nstore'  : nr_of_tests
+        }
+    } 
+}
+
 src = 't/resources'
+res = 't/results'
 
 # search for the special tests where the freeze result is not the same as the
 # nfreeze result (same for store/nstore). Those tests really do have a seperate
@@ -17,7 +68,7 @@ src = 't/resources'
 # plain .py file as a result to compare with
 
 special_tests = {}
-for result in sorted(glob.glob('t/results/*.freeze.py')):
+for result in sorted(glob.glob(res + '/*.freeze.py')):
     result = basename(result)
     result = search(r'(.*)\.freeze\.py', result).group(1)
     special_tests[result] = 1
@@ -28,57 +79,100 @@ def determine_outfile(infile):
     testcase = group.group(1)
     freeze   = group.group(2)
     if freeze == 'freeze' and testcase in special_tests:
-        return 't/results/' + testcase + '.freeze.py'
+        return res + '/' + testcase + '.freeze.py'
     else:
-        return 't/results/' + testcase + '.py'
+        return res + '/' + testcase + '.py'
+
+def mythaw(infile):
+    #print('reading from infile:'+infile)
+    infh = open(infile, 'rb')
+    data = infh.read()
+    infh.close()
+
+    # thaw() it
+    try:
+        data = storable.thaw(data)
+    except Exception,e:
+        traceback.print_exc(e)
+
+    return data
+
         
 class TestStorable(unittest.TestCase):
 
-    def test_sun4_solaris_nfreeze(self):
-        self.run_tests(glob.glob(src+'/sun4-solaris/*/*_nfreeze.storable'))
+    #
+    def test_i686_linux_2_15_nfreeze(self):
+        self.run_tests('i686-linux', '2.15', 'nfreeze')
+    def test_i686_linux_2_15_freeze(self):
+        self.run_tests('i686-linux', '2.15', 'freeze')
+    def test_i686_linux_2_15_nstore(self):
+        self.run_tests('i686-linux', '2.15', 'nstore')
+    def test_i686_linux_2_15_store(self):
+        self.run_tests('i686-linux', '2.15', 'store')
 
-    def test_ppc_linux_nfreeze(self):
-        self.run_tests(glob.glob(src+'/ppc-linux/*/*_nfreeze.storable'), nr=62)
+    #
+    def test_MSWin32_2_15_nfreeze(self):
+        self.run_tests('MSWin32', '2.15', 'nfreeze')
+    def test_MSWin32_2_15_freeze(self):
+        self.run_tests('MSWin32', '2.15', 'freeze')
+    def test_MSWin32_2_15_nstore(self):
+        self.run_tests('MSWin32', '2.15', 'nstore')
+    def test_MSWin32_2_15_store(self):
+        self.run_tests('MSWin32', '2.15', 'store')
 
-    def test_MSWin32_nfreeze(self):
-        self.run_tests(glob.glob(src+'/MSWin32/*/*_nfreeze.storable'))
+    #
+    def test_ppc_linux_2_18_nfreeze(self):
+        self.run_tests('ppc-linux', '2.18', 'nfreeze')
+    def test_ppc_linux_2_18_freeze(self):
+        self.run_tests('ppc-linux', '2.18', 'freeze')
+    def test_ppc_linux_2_18_nstore(self):
+        self.run_tests('ppc-linux', '2.18', 'nstore')
+    def test_ppc_linux_2_18_store(self):
+        self.run_tests('ppc-linux', '2.18', 'store')
 
-    def test_x86_64_linux_nfreeze(self):
-        self.run_tests(glob.glob(src+'/x86_64-linux/*/*_nfreeze.storable'))
+    #
+    def test_ppc_linux_2_21_nfreeze(self):
+        self.run_tests('ppc-linux', '2.21', 'nfreeze')
+    def test_ppc_linux_2_21_freeze(self):
+        self.run_tests('ppc-linux', '2.21', 'freeze')
+    def test_ppc_linux_2_21_nstore(self):
+        self.run_tests('ppc-linux', '2.21', 'nstore')
+    def test_ppc_linux_2_21_store(self):
+        self.run_tests('ppc-linux', '2.21', 'store')
 
-    def test_i686_linux_nfreeze(self):
-        self.run_tests(glob.glob(src+'/i686-linux/*/*_nfreeze.storable'))
+    #
+    def test_sun4_solaris_2_08_nfreeze(self):
+        self.run_tests('sun4-solaris', '2.08', 'nfreeze')
+    def test_sun4_solaris_2_08_freeze(self):
+        self.run_tests('sun4-solaris', '2.08', 'freeze')
+    def test_sun4_solaris_2_08_nstore(self):
+        self.run_tests('sun4-solaris', '2.08', 'nstore')
+    def test_sun4_solaris_2_08_store(self):
+        self.run_tests('sun4-solaris', '2.08', 'store')
 
-    def test_x86_64_linux_store(self):
-        self.run_tests(glob.glob(src+'/x86_64-linux/*/*_store.storable'), deserializer=lambda f:str(storable.retrieve(f)))
+    #
+    def test_x86_64_linux_2_18_nfreeze(self):
+        self.run_tests('x86_64-linux', '2.18', 'nfreeze')
+    def test_x86_64_linux_2_18_freeze(self):
+        self.run_tests('x86_64-linux', '2.18', 'freeze')
+    def test_x86_64_linux_2_18_nstore(self):
+        self.run_tests('x86_64-linux', '2.18', 'nstore')
+    def test_x86_64_linux_2_18_store(self):
+        self.run_tests('x86_64-linux', '2.18', 'store')
+        
 
-    def test_x86_64_linux_store(self):
-        self.run_tests(glob.glob(src+'/x86_64-linux/*/*_nstore.storable'), deserializer=lambda f:str(storable.retrieve(f)))
-
-    def test_freeze(self):
-        self.run_tests(glob.glob(src+'/*/*/*_freeze.storable'),nr=206)
-
-    def mythaw(infile):
-
-        #print('reading from infile:'+infile)
-        infh = open(infile, 'rb')
-        data = infh.read()
-        infh.close()
-
-        # thaw() it
-        try:
-            data = str(storable.thaw(data))
-        except Exception,e:
-            traceback.print_exc(e)
-
-        return data
-
-    def run_tests(self, files, deserializer=mythaw, nr=nr_of_tests):
+    def run_tests(self, architecture, storableversion, type):
+        d = mythaw
+        if type in ['store', 'nstore']:
+            d = storable.retrieve
+        nr_tests = expected[architecture][storableversion][type]
+        files = src+'/'+architecture+'/'+storableversion+'/*_'+type+'.storable'
+        print(files)
         count = 0
-        for infile in sorted(files):
-            self.do_test(infile, deserializer)
+        for infile in sorted(glob.glob(files)):
+            self.do_test(infile, deserializer=d)
             count = count + 1
-        self.assertEqual(count, nr)
+        self.assertEqual(count, nr_tests)
 
     def do_test(self, infile, deserializer):
 
@@ -87,7 +181,7 @@ class TestStorable(unittest.TestCase):
         result_we_need = None
 
         # read the to-be-result in
-        outfile  = determine_outfile(infile)
+        outfile = determine_outfile(infile)
         try:
             outfh = open(outfile,'rb')
             result_we_need = outfh.read()
@@ -105,11 +199,10 @@ class TestStorable(unittest.TestCase):
 
         # check
         try:
-            self.assertEqual(data, result_we_need)
+            self.assertEqual(str(data), str(result_we_need))
         except AssertionError, e:
             print('infile: '+str(infile)+' ,outfile: '+str(outfile))
             raise e
 
-    
 suite = unittest.TestLoader().loadTestsFromTestCase(TestStorable)
 unittest.TextTestRunner(verbosity=2).run(suite)
