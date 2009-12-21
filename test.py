@@ -30,6 +30,10 @@ class TestStorable(unittest.TestCase):
         for infile in sorted(glob.glob('t/resources/i686-linux/*/*_nfreeze.storable')):
             self.do_test(infile)
 
+    def test_x86_64_linux_store(self):
+        for infile in sorted(glob.glob('t/resources/x86_64-linux/*/*_store.storable')):
+            self.do_test(infile, deserializer=lambda f:str(storable.retrieve(f)))
+
     def test_freeze(self):
         special_tests = {}
         for result in sorted(glob.glob('t/results/*.freeze.py')):
@@ -60,7 +64,7 @@ class TestStorable(unittest.TestCase):
                 outfile  = 't/results/' + testcase + '.freeze.py'
                 self.do_test(infile, outfile)
 
-    def load_objects(infile):
+    def mythaw(infile):
 
         print('reading from infile:'+infile)
         infh = open(infile, 'rb')
@@ -75,7 +79,7 @@ class TestStorable(unittest.TestCase):
 
         return data
 
-    def do_test(self, infile, outfile=None, deserializer=load_objects ):
+    def do_test(self, infile, outfile=None, deserializer=mythaw):
 
         data = deserializer(infile)
 
@@ -84,7 +88,7 @@ class TestStorable(unittest.TestCase):
         # read the to-be-result in
         if not outfile:
             outfile = basename(infile)
-            group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze)\.storable$", outfile)
+            group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze|store|nstore)\.storable$", outfile)
             testcase = group.group(1)
             outfile  = 't/results/' + testcase + '.py'
         try:

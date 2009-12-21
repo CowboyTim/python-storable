@@ -170,7 +170,21 @@ def process_item(fh, cache):
         return engine[magic_type](fh, cache)
             
 def thaw(frozen_data):
-    fh    = cStringIO.StringIO(frozen_data)
+    fh = cStringIO.StringIO(frozen_data)
+    data = deserialize(fh);
+    fh.close();
+    return data
+
+def retrieve(file):
+    fh = open(file, 'rb')
+    ignore = fh.read(4)
+    data = None
+    if ignore == 'pst0':
+        data = deserialize(fh)
+    fh.close()
+    return data
+
+def deserialize(fh):
     magic = fh.read(1)
     byteorder = '>'
     if magic == '\x05':
@@ -206,6 +220,5 @@ def thaw(frozen_data):
 
     if cache['has_sx_object']:
         handle_sx_object_refs(cache, data)
-    
-    return data
 
+    return data
