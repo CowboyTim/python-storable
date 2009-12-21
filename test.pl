@@ -185,39 +185,38 @@ sub save_sample {
     my ($what, $data) = @_;
     $count++;
     for my $type (qw(freeze nfreeze)){
-        my $filename =
-            "$base/".sprintf('%03d', $count)."_${what}_".
-            "${Storable::VERSION}_$Config{myarchname}_${type}.storable";
-
-        print "saving sample $what for $type to $filename\n";
-        die "Duplicate filename $filename\n"
-            if exists $filenames->{$filename};
-        $filenames->{$filename} = 1;
+        my $filename = generate_filename($what, $count, $type);
         my $a;
         {
             no strict 'refs';
             $a = &$type($data);
         }
-        open(my $fh, ">", $filename);
+        open(my $fh, '>', $filename);
         print $fh $a;
         close($fh);
     }
 
     for my $type (qw(store nstore)){
-        my $filename =
-            "$base/".sprintf('%03d', $count)."_${what}_".
-            "${Storable::VERSION}_$Config{myarchname}_${type}.storable";
-
-        print "saving sample $what for $type to $filename\n";
-        die "Duplicate filename $filename\n"
-            if exists $filenames->{$filename};
-        $filenames->{$filename} = 1;
+        my $filename = generate_filename($what, $count, $type);
         my $a;
         {
             no strict 'refs';
             $a = &$type($data, $filename);
         }
     }
+}
+
+sub generate_filename {
+    my ($what, $count, $type) = @_;
+    my $filename =
+        "$base/".sprintf('%03d', $count)."_${what}_".
+        "${Storable::VERSION}_$Config{myarchname}_${type}.storable";
+
+    print "saving sample $what for $type to $filename\n";
+    die "Duplicate filename $filename\n"
+        if exists $filenames->{$filename};
+    $filenames->{$filename} = 1;
+    return $filename;
 }
 
 print "Done\n";
