@@ -60,7 +60,7 @@ class TestStorable(unittest.TestCase):
 
     def mythaw(infile):
 
-        print('reading from infile:'+infile)
+        #print('reading from infile:'+infile)
         infh = open(infile, 'rb')
         data = infh.read()
         infh.close()
