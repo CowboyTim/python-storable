@@ -167,7 +167,6 @@ class TestStorable(unittest.TestCase):
             d = storable.retrieve
         nr_tests = expected[architecture][storableversion][type]
         files = src+'/'+architecture+'/'+storableversion+'/*_'+type+'.storable'
-        print(files)
         count = 0
         for infile in sorted(glob.glob(files)):
             self.do_test(infile, deserializer=d)
