@@ -35,10 +35,10 @@ expected = {
             'nstore'  : nr_of_tests
         },
         '2.21' : { 
-            'nfreeze' : nr_of_tests -10,
-            'freeze'  : nr_of_tests -10,
-            'store'   : 0,
-            'nstore'  : 0
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : nr_of_tests,
+            'nstore'  : nr_of_tests
         }
     },
     'sun4-solaris' : {
