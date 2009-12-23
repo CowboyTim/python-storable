@@ -11,6 +11,14 @@ import storable
 nr_of_tests = 36
 
 expected = {
+    'i386-darwin'   : {
+        '2.19' : { 
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : nr_of_tests,
+            'nstore'  : nr_of_tests
+        }
+    },
     'i686-linux'   : {
         '2.15' : { 
             'nfreeze' : nr_of_tests,
@@ -62,7 +70,7 @@ expected = {
             'store'   : nr_of_tests,
             'nstore'  : nr_of_tests
         }
-    } 
+    },
 }
 
 src = 't/resources'
@@ -105,6 +113,16 @@ def mythaw(infile):
 
         
 class TestStorable(unittest.TestCase):
+
+    #
+    def test_i386_darwin_2_21_nfreeze(self):
+        self.run_tests('i386-darwin', '2.19', 'nfreeze')
+    def test_i386_darwin_2_19_freeze(self):
+        self.run_tests('i386-darwin', '2.19', 'freeze')
+    def test_i386_darwin_2_19_nstore(self):
+        self.run_tests('i386-darwin', '2.19', 'nstore')
+    def test_i386_darwin_2_19_store(self):
+        self.run_tests('i386-darwin', '2.19', 'store')
 
     #
     def test_i686_linux_2_15_nfreeze(self):
@@ -175,7 +193,6 @@ class TestStorable(unittest.TestCase):
         self.run_tests('x86_64-linux', '2.21', 'nstore')
     def test_x86_64_linux_2_21_store(self):
         self.run_tests('x86_64-linux', '2.21', 'store')
-        
 
     def run_tests(self, architecture, storableversion, type):
         d = mythaw
