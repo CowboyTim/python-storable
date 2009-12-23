@@ -115,7 +115,7 @@ def mythaw(infile):
 class TestStorable(unittest.TestCase):
 
     #
-    def test_i386_darwin_2_21_nfreeze(self):
+    def test_i386_darwin_2_19_nfreeze(self):
         self.run_tests('i386-darwin', '2.19', 'nfreeze')
     def test_i386_darwin_2_19_freeze(self):
         self.run_tests('i386-darwin', '2.19', 'freeze')
