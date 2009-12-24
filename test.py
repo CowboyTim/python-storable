@@ -11,6 +11,14 @@ import storable
 nr_of_tests = 36
 
 expected = {
+    'ppc64-linux'   : {
+        '2.21' : { 
+            'nfreeze' : nr_of_tests,
+            'freeze'  : nr_of_tests,
+            'store'   : nr_of_tests,
+            'nstore'  : nr_of_tests
+        }
+    },
     'i386-darwin'   : {
         '2.19' : { 
             'nfreeze' : nr_of_tests,
@@ -113,6 +121,16 @@ def mythaw(infile):
 
         
 class TestStorable(unittest.TestCase):
+
+    #
+    def test_ppc64_linux_2_21_nfreeze(self):
+        self.run_tests('ppc64-linux', '2.21', 'nfreeze')
+    def test_ppc64_linux_2_21_freeze(self):
+        self.run_tests('ppc64-linux', '2.21', 'freeze')
+    def test_ppc64_linux_2_21_nstore(self):
+        self.run_tests('ppc64-linux', '2.21', 'nstore')
+    def test_ppc64_linux_2_21_store(self):
+        self.run_tests('ppc64-linux', '2.21', 'store')
 
     #
     def test_i386_darwin_2_19_nfreeze(self):
