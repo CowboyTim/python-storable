@@ -116,6 +116,14 @@ def SX_TIED_IDX(fh, cache):
     indx_in_array = unpack('>I', fh.read(4))[0]
     return data
 
+def SX_HOOK(fh, cache):
+    return None
+
+def SX_FLAG_HASH(fh, cache):
+    size  = _read_size(fh, cache)
+    flags = fh.read(1)
+    return process_item(fh, cache)
+
 # *AFTER* all the subroutines
 engine = {
     '\x00': SX_OBJECT,      # ( 0): Already stored object
@@ -133,14 +141,16 @@ engine = {
     '\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
     '\x11': SX_BLESS,       # (17): Object is blessed
     '\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
+    '\x13': SX_HOOK,        # (19): Stored via hook, user-defined
     '\x14': SX_OVERLOAD,    # (20): Overloaded reference
     '\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
     '\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
     '\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
     '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
+    '\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
 }
 
-exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True})
+exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True, '\x19':True})
 
 def handle_sx_object_refs(cache, data):
     iterateelements = None
@@ -160,7 +170,7 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
-    #print('magic:'+str(magic_type))
+    #print('magic:'+str(unpack('B',magic_type)[0]))
     if magic_type not in exclude_for_cache:
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
@@ -190,7 +200,7 @@ def deserialize(fh):
     if magic == '\x05':
         version = fh.read(1)
         #print("OK:nfreeze") 
-        pass
+        #pass
     if magic == '\x04':
         version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
@@ -208,6 +218,7 @@ def deserialize(fh):
 
         somethingtobeinvestigated = fh.read(4)
 
+    #print('version:'+str(unpack('B', version)[0]));
     cache = { 
         'objects'           : {},
         'objectnr'          : 0,
