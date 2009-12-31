@@ -13,10 +13,10 @@ nr_of_tests = 36
 expected = {
     'ppc64-linux'   : {
         '2.21' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : nr_of_tests,
-            'nstore'  : nr_of_tests
+            'nfreeze' : nr_of_tests + 1,
+            'freeze'  : nr_of_tests + 1,
+            'store'   : nr_of_tests + 1,
+            'nstore'  : nr_of_tests + 1
         }
     },
     'i386-darwin'   : {
@@ -45,16 +45,16 @@ expected = {
     },
     'ppc-linux'    : {
         '2.18' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : nr_of_tests,
-            'nstore'  : nr_of_tests
+            'nfreeze' : nr_of_tests + 1,
+            'freeze'  : nr_of_tests + 1,
+            'store'   : nr_of_tests + 1,
+            'nstore'  : nr_of_tests + 1
         },
         '2.21' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : nr_of_tests,
-            'nstore'  : nr_of_tests
+            'nfreeze' : nr_of_tests + 1,
+            'freeze'  : nr_of_tests + 1,
+            'store'   : nr_of_tests + 1,
+            'nstore'  : nr_of_tests + 1
         }
     },
     'sun4-solaris' : {
