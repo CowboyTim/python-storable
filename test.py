@@ -45,10 +45,10 @@ expected = {
     },
     'ppc-linux'    : {
         '2.18' : { 
-            'nfreeze' : nr_of_tests + 1,
-            'freeze'  : nr_of_tests + 1,
-            'store'   : nr_of_tests + 1,
-            'nstore'  : nr_of_tests + 1
+            'nfreeze' : nr_of_tests + 2,
+            'freeze'  : nr_of_tests + 2,
+            'store'   : nr_of_tests + 2,
+            'nstore'  : nr_of_tests + 2
         },
         '2.21' : { 
             'nfreeze' : nr_of_tests + 1,
