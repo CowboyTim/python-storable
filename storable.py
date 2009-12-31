@@ -157,32 +157,33 @@ def SX_HOOK(fh, cache):
         if flags & int(0x04):   # SHF_LARGE_CLASSLEN
             # TODO
             #print("SHF_LARGE_CLASSLEN")
-            size  = unpack('B', fh.read(1))[0]
-            package_name = fh.read(size)
             #print("size:"+str(size)+",package:"+str(package_name))
-        size  = unpack('B', fh.read(1))[0]
+            pass
     else:
         #print("where:"+str(fh.tell()))
         if flags & int(0x04):   # SHF_LARGE_CLASSLEN
             #print("SHF_LARGE_CLASSLEN")
-            # TODO
-            pass
+            # TODO: test
+            class_size = unpack('>I', fh.read(4))[0]
         else:
-            size  = unpack('B', fh.read(1))[0]
+            class_size = unpack('B', fh.read(1))[0]
             #print("size:"+str(size))
-            package_name = fh.read(size)
-            #print("size:"+str(size)+",package:"+str(package_name))
 
+        package_name = fh.read(class_size)
+        #print("size:"+str(size)+",package:"+str(package_name))
+
+    str_size = 0
     if flags & int(0x08):   # SHF_LARGE_STRLEN
-        # TODO
+        # TODO: test
         #print("SHF_LARGE_STRLEN")
-        pass
+        str_size = unpack('>I', fh.read(4))[0]
     else:
         #print("where:"+str(fh.tell()))
-        size = unpack('B', fh.read(1))[0]
-        if size:
-            frozen_str = fh.read(size)
-            #print("size:"+str(size)+",frozen_str:"+str(frozen_str))
+        str_size = unpack('B', fh.read(1))[0]
+
+    if str_size:
+        frozen_str = fh.read(str_size)
+        #print("size:"+str(size)+",frozen_str:"+str(frozen_str))
 
     list_size = 0
     if flags & int(0x80):   # SHF_HAS_LIST
