@@ -260,7 +260,7 @@ class TestStorable(unittest.TestCase):
         if False:
             #print('writing output to '+outfile)
             outfh = open(outfile,'wb')
-            outfh.write(data)
+            outfh.write(str(data))
             outfh.close()
 
         # check
