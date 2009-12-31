@@ -172,9 +172,10 @@ def SX_HOOK(fh, cache):
         print("SHF_LARGE_STRLEN")
     else:
         print("where:"+str(fh.tell()))
-        size  = unpack('B', fh.read(1))[0]
-        frozen_str = fh.read(size)
-        print("size:"+str(size)+",frozen_str:"+str(frozen_str))
+        size = unpack('B', fh.read(1))[0]
+        if size:
+            frozen_str = fh.read(size)
+            print("size:"+str(size)+",frozen_str:"+str(frozen_str))
 
     list_size = 0
     if flags & int(0x80):   # SHF_HAS_LIST
