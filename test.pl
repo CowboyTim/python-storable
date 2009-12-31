@@ -181,6 +181,20 @@ save_sample('ref04', \\\\@array);
     save_sample('utf8test02', \$a);
 }
 
+{
+    # SX_HOOK test
+    package Test;
+    sub new {bless {-test => [], -testscalar => 'Hello world'}, 'Test'};
+    sub STORABLE_freeze {
+        return (1, $_[0]->{-test}, \$_[0]->{-testscalar});
+    }
+
+    package main;
+    
+    my $h = Test->new();
+    save_sample('medium_complex_hook_test', $h);
+}
+
 sub save_sample {
     my ($what, $data) = @_;
     $count++;

@@ -79,10 +79,10 @@ expected = {
             'nstore'  : nr_of_tests
         },
         '2.19' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : nr_of_tests,
-            'nstore'  : nr_of_tests
+            'nfreeze' : nr_of_tests + 1,
+            'freeze'  : nr_of_tests + 1,
+            'store'   : nr_of_tests + 1,
+            'nstore'  : nr_of_tests + 1
         }
     },
 }
