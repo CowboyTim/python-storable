@@ -187,11 +187,13 @@ def SX_HOOK(fh, cache):
     list_size = 0
     if flags & int(0x80):   # SHF_HAS_LIST
         #print("SHF_HAS_LIST")
-        list_size  = unpack('B', fh.read(1))[0]
-        if flags & int(0x04):   # SHF_LARGE_LISTLEN
+        if flags & int(0x10):   # SHF_LARGE_LISTLEN
             #print("SHF_LARGE_LISTLEN")
-            # TODO
-            pass
+            #print("where:"+str(fh.tell()))
+            list_size = unpack('>I', fh.read(4))[0]
+        else:
+            list_size  = unpack('B', fh.read(1))[0]
+    
 
     #print("list_size:"+str(list_size))
     #print("cache:"+str(cache))
