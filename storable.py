@@ -154,11 +154,7 @@ def SX_HOOK(fh, cache):
     if flags & int(0x20):   # SHF_IDX_CLASSNAME
         # TODO
         #print("SHF_IDX_CLASSNAME")
-        if flags & int(0x04):   # SHF_LARGE_CLASSLEN
-            # TODO
-            #print("SHF_LARGE_CLASSLEN")
-            #print("size:"+str(size)+",package:"+str(package_name))
-            pass
+        pass
     else:
         #print("where:"+str(fh.tell()))
         if flags & int(0x04):   # SHF_LARGE_CLASSLEN
