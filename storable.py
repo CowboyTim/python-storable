@@ -193,7 +193,7 @@ def SX_HOOK(fh, cache):
             #print("where:"+str(fh.tell()))
             list_size = unpack('>I', fh.read(4))[0]
         else:
-            list_size  = unpack('B', fh.read(1))[0]
+            list_size = unpack('B', fh.read(1))[0]
     
 
     #print("list_size:"+str(list_size))
