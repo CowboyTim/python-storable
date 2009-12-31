@@ -122,74 +122,82 @@ def SX_TIED_IDX(fh, cache):
 def SX_HOOK(fh, cache):
     flags = unpack('B', fh.read(1))[0]
     type = flags & int(0x03) # SHF_TYPE_MASK 0x03
-    print("flags:"+str(type))
+    #print("flags:"+str(type))
     data = None
     if type == 3:  # SHT_EXTRA
-        print("SHT_EXTRA")
+        # TODO
+        #print("SHT_EXTRA")
+        pass
 
     if type == 0:  # SHT_SCALAR
-        print("SHT_SCALAR")
+        # TODO
+        #print("SHT_SCALAR")
+        pass
     if type == 1:  # SHT_ARRAY
-        print("SHT_ARRAY")
+        # TODO
+        #print("SHT_ARRAY")
         data = []
     if type == 2:  # SHT_HASH
-        print("SHT_HASH")
+        #print("SHT_HASH")
         data = {}
 
     while flags & int(0x40):   # SHF_NEED_RECURSE
-        print("SHF_NEED_RECURSE")
+        #print("SHF_NEED_RECURSE")
         dummy = process_item(fh, cache)
-        print(dummy)
+        #print(dummy)
         flags = unpack('B', fh.read(1))[0]
-        print("flags:"+str(flags))
+        #print("flags:"+str(flags))
 
-    print("recursive done")
+    #print("recursive done")
 
 
     if flags & int(0x20):   # SHF_IDX_CLASSNAME
         # TODO
-        print("SHF_IDX_CLASSNAME")
+        #print("SHF_IDX_CLASSNAME")
         if flags & int(0x04):   # SHF_LARGE_CLASSLEN
             # TODO
-            print("SHF_LARGE_CLASSLEN")
+            #print("SHF_LARGE_CLASSLEN")
             size  = unpack('B', fh.read(1))[0]
             package_name = fh.read(size)
-            print("size:"+str(size)+",package:"+str(package_name))
+            #print("size:"+str(size)+",package:"+str(package_name))
         size  = unpack('B', fh.read(1))[0]
     else:
+        #print("where:"+str(fh.tell()))
         if flags & int(0x04):   # SHF_LARGE_CLASSLEN
-            print("SHF_LARGE_CLASSLEN")
+            #print("SHF_LARGE_CLASSLEN")
             # TODO
+            pass
         else:
-            print("where:"+str(fh.tell()))
             size  = unpack('B', fh.read(1))[0]
-            print("size:"+str(size))
+            #print("size:"+str(size))
             package_name = fh.read(size)
-            print("size:"+str(size)+",package:"+str(package_name))
+            #print("size:"+str(size)+",package:"+str(package_name))
 
     if flags & int(0x08):   # SHF_LARGE_STRLEN
         # TODO
-        print("SHF_LARGE_STRLEN")
+        #print("SHF_LARGE_STRLEN")
+        pass
     else:
-        print("where:"+str(fh.tell()))
+        #print("where:"+str(fh.tell()))
         size = unpack('B', fh.read(1))[0]
         if size:
             frozen_str = fh.read(size)
-            print("size:"+str(size)+",frozen_str:"+str(frozen_str))
+            #print("size:"+str(size)+",frozen_str:"+str(frozen_str))
 
     list_size = 0
     if flags & int(0x80):   # SHF_HAS_LIST
-        print("SHF_HAS_LIST")
+        #print("SHF_HAS_LIST")
         list_size  = unpack('B', fh.read(1))[0]
         if flags & int(0x04):   # SHF_LARGE_LISTLEN
-            print("SHF_LARGE_LISTLEN")
+            #print("SHF_LARGE_LISTLEN")
             # TODO
+            pass
 
-    print("list_size:"+str(list_size))
-    print("cache:"+str(cache))
+    #print("list_size:"+str(list_size))
+    #print("cache:"+str(cache))
     for i in range(1,list_size+1):
         indx_in_array = unpack('>I', fh.read(4))[0]
-        print("indx:"+str(indx_in_array))
+        #print("indx:"+str(indx_in_array))
         if i in cache['objects']:
             data[i] = cache['objects'][i]
         else:
@@ -200,9 +208,22 @@ def SX_HOOK(fh, cache):
 
 def SX_FLAG_HASH(fh, cache):
     # TODO: NOT YET IMPLEMENTED!!!!!!
+    #print("SX_FLAG_HASH:where:"+str(fh.tell()))
+    flags = unpack('B', fh.read(1))[0]
     size  = _read_size(fh, cache)
-    flags = fh.read(1)
-    return process_item(fh, cache)
+    #print("size:"+str(size))
+    #print("flags:"+str(flags))
+    data = {}
+    for i in range(0,size):
+        value = process_item(fh, cache)
+        flags = unpack('B', fh.read(1))[0]
+        keysize = _read_size(fh, cache)
+        key = None
+        if keysize:
+            key = fh.read(keysize)
+        data[key] = value
+
+    return data
 
 # *AFTER* all the subroutines
 engine = {
