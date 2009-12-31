@@ -72,6 +72,9 @@ def SX_DOUBLE(fh, cache):
 def SX_BYTE(fh, cache):
     return unpack('B', fh.read(1))[0] - 128
 
+def SX_NETINT(fh, cache):
+    return unpack('>I', fh.read(4))[0]
+
 def SX_SCALAR(fh, cache):
     size = unpack('B', fh.read(1))[0]
     return fh.read(size)
@@ -208,6 +211,7 @@ engine = {
     '\x05': SX_UNDEF,       # ( 5): Undefined scalar
     '\x07': SX_DOUBLE,      # ( 7): Double forthcoming
     '\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
+    '\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
     '\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
     '\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
     '\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
