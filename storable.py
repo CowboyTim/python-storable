@@ -199,6 +199,7 @@ def SX_HOOK(fh, cache):
     return data
 
 def SX_FLAG_HASH(fh, cache):
+    # TODO: NOT YET IMPLEMENTED!!!!!!
     size  = _read_size(fh, cache)
     flags = fh.read(1)
     return process_item(fh, cache)
