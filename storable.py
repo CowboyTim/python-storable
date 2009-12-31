@@ -196,10 +196,10 @@ def SX_HOOK(fh, cache):
     #print("list_size:"+str(list_size))
     #print("cache:"+str(cache))
     for i in range(1,list_size+1):
-        indx_in_array = unpack('>I', fh.read(4))[0]
+        indx_in_array = unpack('>I', fh.read(4))[0] + 1
         #print("indx:"+str(indx_in_array))
-        if i in cache['objects']:
-            data[i] = cache['objects'][i]
+        if indx_in_array in cache['objects']:
+            data[i] = cache['objects'][indx_in_array]
         else:
             data[i] = None
         
