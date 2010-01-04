@@ -45,10 +45,10 @@ expected = {
     },
     'ppc-linux'    : {
         '2.18' : { 
-            'nfreeze' : nr_of_tests + 7,
-            'freeze'  : nr_of_tests + 7,
-            'store'   : nr_of_tests + 7,
-            'nstore'  : nr_of_tests + 7
+            'nfreeze' : nr_of_tests + 8,
+            'freeze'  : nr_of_tests + 8,
+            'store'   : nr_of_tests + 8,
+            'nstore'  : nr_of_tests + 8
         },
         '2.21' : { 
             'nfreeze' : nr_of_tests + 1,
@@ -257,7 +257,7 @@ class TestStorable(unittest.TestCase):
             traceback.print_exc(e)
 
         # dump it
-        if False:
+        if True:
             #print('writing output to '+outfile)
             outfh = open(outfile,'wb')
             outfh.write(str(data))
