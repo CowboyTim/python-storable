@@ -210,7 +210,7 @@ save_sample('ref04', \\\\@array);
 }
 
 {
-    # SX_HOOK test: multiple test
+    # SX_HOOK test: multiple test: same scalar
     package Test3;
     sub new {bless {}, 'Test3'};
     sub STORABLE_freeze {
@@ -221,6 +221,20 @@ save_sample('ref04', \\\\@array);
     
     my $a = [ Test3->new(), Test3->new() ];
     save_sample('medium_complex_multiple_hook_test', $a);
+}
+
+{
+    # SX_HOOK test: multiple test: different scalar
+    package Test4;
+    sub new {bless {-v => $_[1]}, 'Test4'};
+    sub STORABLE_freeze {
+        return 0, \$_[0]->{-v};
+    }
+
+    package main;
+    
+    my $a = [ Test4->new('var 1'), Test4->new('var 2') ];
+    save_sample('medium_complex_multiple_hook_test2', $a);
 }
 
 sub save_sample {
