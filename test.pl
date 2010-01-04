@@ -3,6 +3,8 @@
 use strict; use warnings;
 
 use FindBin;
+use lib "$FindBin::Bin";
+
 use Fatal qw(open);
 use File::Path qw(mkpath);
 use Config;
@@ -235,6 +237,48 @@ save_sample('ref04', \\\\@array);
     
     my $a = [ Test4->new('var 1'), Test4->new('var 2') ];
     save_sample('medium_complex_multiple_hook_test2', $a);
+}
+
+{
+    # SX_HOOK test: array
+    package Test6;
+    sub new {bless [$_[1]], 'Test6'};
+    sub STORABLE_freeze {
+        return 0, \$_[0][0];
+    }
+
+    package main;
+    
+    my $a = [ Test6->new('avar 1'), Test6->new('avar 2') ];
+    save_sample('medium_hook_array_test1', $a);
+}
+
+{
+    # SX_HOOK test: multiple test: own serialized + array
+    package Test7;
+    sub new {bless [$_[1]], 'Test7'};
+    sub STORABLE_freeze {
+        return "SERIALIZED:$_[0]->[0]:SERIALIZED", \$_[0][0];
+    }
+
+    package main;
+
+    my $a = [ Test7->new('svar 1'), Test7->new('svar 2') ];
+    save_sample('medium_own_serialized1', $a);
+}
+
+{
+    # SX_HOOK test: multiple test: scalar
+    package Test8;
+    sub new {bless \$_[1], 'Test8'};
+    sub STORABLE_freeze {
+        return 0, $_[0], \10, \'Test string';
+    }
+
+    package main;
+
+    my $a = Test8->new('scalar var 1');
+    save_sample('medium_hook_scalar', $a);
 }
 
 sub save_sample {
