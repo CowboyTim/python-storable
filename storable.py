@@ -122,81 +122,82 @@ def SX_TIED_IDX(fh, cache):
 def SX_HOOK(fh, cache):
     flags = unpack('B', fh.read(1))[0]
     type = flags & int(0x03) # SHF_TYPE_MASK 0x03
-    print("flags:"+str(type))
+    #print("flags:"+str(type))
     data = None
     if type == 3:  # SHT_EXTRA
         # TODO
-        print("SHT_EXTRA")
+        #print("SHT_EXTRA")
         pass
 
     if type == 0:  # SHT_SCALAR
         # TODO
-        print("SHT_SCALAR")
+        #print("SHT_SCALAR")
         pass
     if type == 1:  # SHT_ARRAY
         # TODO
-        print("SHT_ARRAY")
+        #print("SHT_ARRAY")
         data = []
     if type == 2:  # SHT_HASH
-        print("SHT_HASH")
+        #print("SHT_HASH")
         data = {}
 
     while flags & int(0x40):   # SHF_NEED_RECURSE
-        print("SHF_NEED_RECURSE")
+        #print("SHF_NEED_RECURSE")
         dummy = process_item(fh, cache)
-        print(dummy)
+        #print(dummy)
         flags = unpack('B', fh.read(1))[0]
-        print("flags:"+str(flags))
+        #print("flags:"+str(flags))
 
-    print("recursive done")
+    #print("recursive done")
 
 
     if flags & int(0x20):   # SHF_IDX_CLASSNAME
-        # TODO
-        print("SHF_IDX_CLASSNAME")
-        pass
+        #print("SHF_IDX_CLASSNAME")
+        indx = unpack('B', fh.read(1))[0]
+        #print("indx:"+str(indx))
+        package_name = cache['classes'][indx]
     else:
-        print("where:"+str(fh.tell()))
+        #print("where:"+str(fh.tell()))
         if flags & int(0x04):   # SHF_LARGE_CLASSLEN
-            print("SHF_LARGE_CLASSLEN")
+            #print("SHF_LARGE_CLASSLEN")
             # TODO: test
             class_size = unpack('>I', fh.read(4))[0]
         else:
             class_size = unpack('B', fh.read(1))[0]
-            print("size:"+str(class_size))
+            #print("size:"+str(class_size))
 
         package_name = fh.read(class_size)
-        print("size:"+str(class_size)+",package:"+str(package_name))
+        cache['classes'].append(package_name)
+        #print("size:"+str(class_size)+",package:"+str(package_name))
 
     str_size = 0
     if flags & int(0x08):   # SHF_LARGE_STRLEN
         # TODO: test
-        print("SHF_LARGE_STRLEN")
+        #print("SHF_LARGE_STRLEN")
         str_size = unpack('>I', fh.read(4))[0]
     else:
-        print("where:"+str(fh.tell()))
+        #print("where:"+str(fh.tell()))
         str_size = unpack('B', fh.read(1))[0]
 
     if str_size:
         frozen_str = fh.read(str_size)
-        print("size:"+str(str_size)+",frozen_str:"+str(frozen_str))
+        #print("size:"+str(str_size)+",frozen_str:"+str(frozen_str))
 
     list_size = 0
     if flags & int(0x80):   # SHF_HAS_LIST
-        print("SHF_HAS_LIST")
+        #print("SHF_HAS_LIST")
         if flags & int(0x10):   # SHF_LARGE_LISTLEN
-            print("SHF_LARGE_LISTLEN")
-            print("where:"+str(fh.tell()))
+            #print("SHF_LARGE_LISTLEN")
+            #print("where:"+str(fh.tell()))
             list_size = unpack('>I', fh.read(4))[0]
         else:
             list_size = unpack('B', fh.read(1))[0]
     
 
-    print("list_size:"+str(list_size))
-    print("cache:"+str(cache))
+    #print("list_size:"+str(list_size))
     for i in range(1,list_size+1):
         indx_in_array = unpack('>I', fh.read(4))[0] + 1
-        print("indx:"+str(indx_in_array))
+        #print("indx:"+str(indx_in_array))
         if indx_in_array in cache['objects']:
             data[i] = cache['objects'][indx_in_array]
         else:
@@ -207,11 +208,11 @@ def SX_HOOK(fh, cache):
 
 def SX_FLAG_HASH(fh, cache):
     # TODO: NOT YET IMPLEMENTED!!!!!!
-    print("SX_FLAG_HASH:where:"+str(fh.tell()))
+    #print("SX_FLAG_HASH:where:"+str(fh.tell()))
     flags = unpack('B', fh.read(1))[0]
     size  = _read_size(fh, cache)
-    print("size:"+str(size))
-    print("flags:"+str(flags))
+    #print("size:"+str(size))
+    #print("flags:"+str(flags))
     data = {}
     for i in range(0,size):
         value = process_item(fh, cache)
@@ -271,7 +272,7 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
-    print('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell()))
+    #print('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell()))
     if magic_type not in exclude_for_cache:
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
@@ -300,13 +301,13 @@ def deserialize(fh):
     byteorder = '>'
     if magic == '\x05':
         version = fh.read(1)
-        print("OK:nfreeze") 
+        #print("OK:nfreeze") 
         #pass
     if magic == '\x04':
         version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
         byteorder = fh.read(size)
-        print("OK:freeze:" + str(byteorder))
+        #print("OK:freeze:" + str(byteorder))
 
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
@@ -319,7 +320,7 @@ def deserialize(fh):
 
         somethingtobeinvestigated = fh.read(4)
 
-    print('version:'+str(unpack('B', version)[0]));
+    #print('version:'+str(unpack('B', version)[0]));
     cache = { 
         'objects'           : {},
         'objectnr'          : 0,
