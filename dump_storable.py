@@ -2,6 +2,8 @@
 
 import storable
 import sys
+import pprint
 
+p = pprint.PrettyPrinter(indent=4)
 for f in sys.argv[1:]:
-    print(storable.retrieve(f))
+    p.pprint(storable.retrieve(f))
