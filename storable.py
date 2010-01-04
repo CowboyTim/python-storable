@@ -160,7 +160,7 @@ def SX_HOOK(fh, cache):
             indx = unpack('>I', fh.read(4))[0]
         else:
             indx = unpack('B', fh.read(1))[0]
-        #print("indx:"+str(indx))
+        #print("classindx:"+str(indx))
         package_name = cache['classes'][indx]
     else:
         #print("where:"+str(fh.tell()))
@@ -202,7 +202,7 @@ def SX_HOOK(fh, cache):
 
     #print("list_size:"+str(list_size))
     for i in range(0,list_size):
-        indx_in_array = unpack('>I', fh.read(4))[0] + 1
+        indx_in_array = unpack('>I', fh.read(4))[0]
         #print("indx:"+str(indx_in_array))
         if indx_in_array in cache['objects']:
             data[i+1] = cache['objects'][indx_in_array]
@@ -258,7 +258,7 @@ engine = {
     '\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
 }
 
-exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True})
+exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True, '\x13':True})
 
 def handle_sx_object_refs(cache, data):
     iterateelements = None
@@ -278,11 +278,12 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
-    #print('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell()))
+    #print('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell())+',will do:'+str(engine[magic_type]))
     if magic_type not in exclude_for_cache:
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
         cache['objects'][i] = engine[magic_type](fh, cache)
+        #print("set i:"+str(i)+",to:"+str(cache['objects'][i]))
         return cache['objects'][i]
     else:
         return engine[magic_type](fh, cache)
