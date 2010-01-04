@@ -121,25 +121,6 @@ def SX_TIED_IDX(fh, cache):
 
 def SX_HOOK(fh, cache):
     flags = unpack('B', fh.read(1))[0]
-    type = flags & int(0x03) # SHF_TYPE_MASK 0x03
-    #print("flags:"+str(type))
-    data = None
-    if type == 3:  # SHT_EXTRA
-        # TODO
-        #print("SHT_EXTRA")
-        pass
-
-    if type == 0:  # SHT_SCALAR
-        # TODO
-        #print("SHT_SCALAR")
-        pass
-    if type == 1:  # SHT_ARRAY
-        # TODO
-        #print("SHT_ARRAY")
-        data = []
-    if type == 2:  # SHT_HASH
-        #print("SHT_HASH")
-        data = {}
 
     while flags & int(0x40):   # SHF_NEED_RECURSE
         #print("SHF_NEED_RECURSE")
@@ -200,15 +181,40 @@ def SX_HOOK(fh, cache):
             list_size = unpack('B', fh.read(1))[0]
     
 
+    # FIXME: improve this code
+
     #print("list_size:"+str(list_size))
+    arguments = {}
     for i in range(0,list_size):
         indx_in_array = unpack('>I', fh.read(4))[0]
         #print("indx:"+str(indx_in_array))
         if indx_in_array in cache['objects']:
-            data[i+1] = cache['objects'][indx_in_array]
+            arguments[i+1] = cache['objects'][indx_in_array]
         else:
-            data[i+1] = None
-        
+            arguments[i+1] = None
+
+    # FIXME: implement the real callback STORABLE_thaw() still, for now, just
+    # return the dictionary 'arguments' as data
+    type = flags & int(0x03) # SHF_TYPE_MASK 0x03
+    #print("flags:"+str(type))
+    data = arguments
+    if type == 3:  # SHT_EXTRA
+        # TODO
+        #print("SHT_EXTRA")
+        pass
+    if type == 0:  # SHT_SCALAR
+        # TODO
+        #print("SHT_SCALAR")
+        pass
+    if type == 1:  # SHT_ARRAY
+        # TODO
+        #print("SHT_ARRAY")
+        pass
+    if type == 2:  # SHT_HASH
+        # TODO
+        #print("SHT_HASH")
+        pass
+
 
     return data
 
