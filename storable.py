@@ -157,6 +157,8 @@ def SX_HOOK(fh, cache):
         cache['classes'].append(package_name)
         #print("size:"+str(class_size)+",package:"+str(package_name))
 
+    arguments = {}
+
     str_size = 0
     if flags & int(0x08):   # SHF_LARGE_STRLEN
         # TODO: test
@@ -169,6 +171,7 @@ def SX_HOOK(fh, cache):
     if str_size:
         frozen_str = fh.read(str_size)
         #print("size:"+str(str_size)+",frozen_str:"+str(frozen_str))
+        arguments[0] = frozen_str
 
     list_size = 0
     if flags & int(0x80):   # SHF_HAS_LIST
@@ -179,12 +182,8 @@ def SX_HOOK(fh, cache):
             list_size = unpack('>I', fh.read(4))[0]
         else:
             list_size = unpack('B', fh.read(1))[0]
-    
-
-    # FIXME: improve this code
 
     #print("list_size:"+str(list_size))
-    arguments = {}
     for i in range(0,list_size):
         indx_in_array = unpack('>I', fh.read(4))[0]
         #print("indx:"+str(indx_in_array))
