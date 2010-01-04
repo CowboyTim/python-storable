@@ -161,7 +161,6 @@ def SX_HOOK(fh, cache):
 
     str_size = 0
     if flags & int(0x08):   # SHF_LARGE_STRLEN
-        # TODO: test
         #print("SHF_LARGE_STRLEN")
         str_size = unpack('>I', fh.read(4))[0]
     else:
