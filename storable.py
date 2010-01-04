@@ -154,44 +154,43 @@ def SX_HOOK(fh, cache):
     if flags & int(0x20):   # SHF_IDX_CLASSNAME
         # TODO
         #print("SHF_IDX_CLASSNAME")
-        if flags & int(0x04):   # SHF_LARGE_CLASSLEN
-            # TODO
-            #print("SHF_LARGE_CLASSLEN")
-            size  = unpack('B', fh.read(1))[0]
-            package_name = fh.read(size)
-            #print("size:"+str(size)+",package:"+str(package_name))
-        size  = unpack('B', fh.read(1))[0]
-    else:
-        #print("where:"+str(fh.tell()))
-        if flags & int(0x04):   # SHF_LARGE_CLASSLEN
-            #print("SHF_LARGE_CLASSLEN")
-            # TODO
-            pass
-        else:
-            size  = unpack('B', fh.read(1))[0]
-            #print("size:"+str(size))
-            package_name = fh.read(size)
-            #print("size:"+str(size)+",package:"+str(package_name))
-
-    if flags & int(0x08):   # SHF_LARGE_STRLEN
-        # TODO
-        #print("SHF_LARGE_STRLEN")
         pass
     else:
         #print("where:"+str(fh.tell()))
-        size = unpack('B', fh.read(1))[0]
-        if size:
-            frozen_str = fh.read(size)
-            #print("size:"+str(size)+",frozen_str:"+str(frozen_str))
+        if flags & int(0x04):   # SHF_LARGE_CLASSLEN
+            #print("SHF_LARGE_CLASSLEN")
+            # TODO: test
+            class_size = unpack('>I', fh.read(4))[0]
+        else:
+            class_size = unpack('B', fh.read(1))[0]
+            #print("size:"+str(size))
+
+        package_name = fh.read(class_size)
+        #print("size:"+str(size)+",package:"+str(package_name))
+
+    str_size = 0
+    if flags & int(0x08):   # SHF_LARGE_STRLEN
+        # TODO: test
+        #print("SHF_LARGE_STRLEN")
+        str_size = unpack('>I', fh.read(4))[0]
+    else:
+        #print("where:"+str(fh.tell()))
+        str_size = unpack('B', fh.read(1))[0]
+
+    if str_size:
+        frozen_str = fh.read(str_size)
+        #print("size:"+str(size)+",frozen_str:"+str(frozen_str))
 
     list_size = 0
     if flags & int(0x80):   # SHF_HAS_LIST
         #print("SHF_HAS_LIST")
-        list_size  = unpack('B', fh.read(1))[0]
-        if flags & int(0x04):   # SHF_LARGE_LISTLEN
+        if flags & int(0x10):   # SHF_LARGE_LISTLEN
             #print("SHF_LARGE_LISTLEN")
-            # TODO
-            pass
+            #print("where:"+str(fh.tell()))
+            list_size = unpack('>I', fh.read(4))[0]
+        else:
+            list_size = unpack('B', fh.read(1))[0]
+    
 
     #print("list_size:"+str(list_size))
     #print("cache:"+str(cache))
