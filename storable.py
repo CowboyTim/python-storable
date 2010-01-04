@@ -153,7 +153,13 @@ def SX_HOOK(fh, cache):
 
     if flags & int(0x20):   # SHF_IDX_CLASSNAME
         #print("SHF_IDX_CLASSNAME")
-        indx = unpack('B', fh.read(1))[0]
+        #print("where:"+str(fh.tell()))
+        if flags & int(0x04):   # SHF_LARGE_CLASSLEN
+            #print("SHF_LARGE_CLASSLEN")
+            # TODO: test
+            indx = unpack('>I', fh.read(4))[0]
+        else:
+            indx = unpack('B', fh.read(1))[0]
         #print("indx:"+str(indx))
         package_name = cache['classes'][indx]
     else:
@@ -195,13 +201,13 @@ def SX_HOOK(fh, cache):
     
 
     #print("list_size:"+str(list_size))
-    for i in range(1,list_size+1):
+    for i in range(0,list_size):
         indx_in_array = unpack('>I', fh.read(4))[0] + 1
         #print("indx:"+str(indx_in_array))
         if indx_in_array in cache['objects']:
-            data[i] = cache['objects'][indx_in_array]
+            data[i+1] = cache['objects'][indx_in_array]
         else:
-            data[i] = None
+            data[i+1] = None
         
 
     return data
