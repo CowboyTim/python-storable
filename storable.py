@@ -251,7 +251,7 @@ engine = {
     '\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
 }
 
-exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True, '\x19':True})
+exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True})
 
 def handle_sx_object_refs(cache, data):
     iterateelements = None
