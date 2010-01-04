@@ -1,1 +1,1 @@
-[{1: None}, {1: None}]
+[{1: 'some scalar var'}, {1: 'some scalar var'}]
