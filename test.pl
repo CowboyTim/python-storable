@@ -186,7 +186,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: simple array-return
     package Test;
-    sub new {bless {-test => [], -testscalar => 'Hello world'}, 'Test'};
+    sub new {bless {-test => [], -testscalar => 'Hello world'}, $_[0]};
     sub STORABLE_freeze {
         return 1, $_[0]->{-test}, \$_[0]->{-testscalar};
     }
@@ -200,7 +200,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: large simple array-return
     package Test2;
-    sub new {bless {}, 'Test2'};
+    sub new {bless {}, $_[0]};
     sub STORABLE_freeze {
         return 0, map {\$_[0]->{$_}} (('x') x 300);
     }
@@ -214,7 +214,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: multiple test: same scalar
     package Test3;
-    sub new {bless {}, 'Test3'};
+    sub new {bless {}, $_[0]};
     sub STORABLE_freeze {
         return 0, \'some scalar var';
     }
@@ -228,7 +228,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: multiple test: different scalar
     package Test4;
-    sub new {bless {-v => $_[1]}, 'Test4'};
+    sub new {bless {-v => $_[1]}, $_[0]};
     sub STORABLE_freeze {
         return 0, \$_[0]->{-v};
     }
@@ -242,7 +242,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: array
     package Test6;
-    sub new {bless [$_[1]], 'Test6'};
+    sub new {bless [$_[1]], $_[0]};
     sub STORABLE_freeze {
         return 0, \$_[0][0];
     }
@@ -256,7 +256,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: multiple test: own serialized + array
     package Test7;
-    sub new {bless [$_[1]], 'Test7'};
+    sub new {bless [$_[1]], $_[0]};
     sub STORABLE_freeze {
         return "SERIALIZED:$_[0]->[0]:SERIALIZED", \$_[0][0];
     }
@@ -270,7 +270,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: test: scalar
     package Test8;
-    sub new {bless \$_[1], 'Test8'};
+    sub new {bless \$_[1], $_[0]};
     sub STORABLE_freeze {
         return 0, $_[0], \10, \'Test string';
     }
@@ -284,7 +284,7 @@ save_sample('ref04', \\\\@array);
 {
     # SX_HOOK test: test: scalar, large serialize string
     package Test9;
-    sub new {bless \$_[1], 'Test9'};
+    sub new {bless \$_[1], $_[0]};
     sub STORABLE_freeze {
         return 'x'x300, $_[0], \10, \'Test string';
     }
