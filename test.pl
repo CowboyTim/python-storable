@@ -295,6 +295,24 @@ save_sample('ref04', \\\\@array);
     save_sample('large_frozen_string_hook', $a);
 }
 
+##{
+##    # SX_HOOK test: array
+##    package Test10;
+##    sub new {bless [$_[1]], $_[0]};
+##    sub STORABLE_freeze {
+##        return 0, \$_[0][0];
+##    }
+##
+##    package main;
+##    
+##    my $a = [ 
+##        Test10->new('scalar var 1'),
+##        Test10->new('scalar var 2'), 
+##        Test10->new('scalar var 3')
+##    ];
+##    save_sample('medium_hook_array_three', $a);
+##}
+
 sub save_sample {
     my ($what, $data) = @_;
     $count++;
