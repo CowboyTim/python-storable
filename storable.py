@@ -182,6 +182,7 @@ def SX_HOOK(fh, cache):
         else:
             list_size = unpack('B', fh.read(1))[0]
 
+
     #print("list_size:"+str(list_size))
     for i in range(0,list_size):
         indx_in_array = unpack('>I', fh.read(4))[0]
@@ -262,7 +263,9 @@ engine = {
     '\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
 }
 
-exclude_for_cache = dict({'\x00':True, '\x0b':True, '\x0c':True, '\x0d':True})
+exclude_for_cache = dict({
+    '\x00':True, '\x0b':True, '\x0c':True, '\x0d':True, '\x11':True, '\x12':True
+})
 
 def handle_sx_object_refs(cache, data):
     iterateelements = None
@@ -286,6 +289,7 @@ def process_item(fh, cache):
     if magic_type not in exclude_for_cache:
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
+        #print("set i:"+str(i))
         cache['objects'][i] = engine[magic_type](fh, cache)
         #print("set i:"+str(i)+",to:"+str(cache['objects'][i]))
         return cache['objects'][i]
