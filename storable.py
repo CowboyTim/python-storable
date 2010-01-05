@@ -131,7 +131,6 @@ def SX_HOOK(fh, cache):
 
     #print("recursive done")
 
-
     if flags & int(0x20):   # SHF_IDX_CLASSNAME
         #print("SHF_IDX_CLASSNAME")
         #print("where:"+str(fh.tell()))
@@ -148,7 +147,8 @@ def SX_HOOK(fh, cache):
         if flags & int(0x04):   # SHF_LARGE_CLASSLEN
             #print("SHF_LARGE_CLASSLEN")
             # TODO: test
-            class_size = unpack('>I', fh.read(4))[0]
+            # FIXME: is this actually possible?
+            class_size = _read_size(fh, cache)
         else:
             class_size = unpack('B', fh.read(1))[0]
             #print("size:"+str(class_size))
@@ -162,7 +162,7 @@ def SX_HOOK(fh, cache):
     str_size = 0
     if flags & int(0x08):   # SHF_LARGE_STRLEN
         #print("SHF_LARGE_STRLEN")
-        str_size = unpack('>I', fh.read(4))[0]
+        str_size = _read_size(fh, cache)
     else:
         #print("where:"+str(fh.tell()))
         str_size = unpack('B', fh.read(1))[0]
@@ -178,7 +178,7 @@ def SX_HOOK(fh, cache):
         if flags & int(0x10):   # SHF_LARGE_LISTLEN
             #print("SHF_LARGE_LISTLEN")
             #print("where:"+str(fh.tell()))
-            list_size = unpack('>I', fh.read(4))[0]
+            list_size = _read_size(fh, cache)
         else:
             list_size = unpack('B', fh.read(1))[0]
 
