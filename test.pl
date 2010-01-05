@@ -305,10 +305,12 @@ save_sample('ref04', \\\\@array);
 
     package main;
     
+    my $b = Test10->new('scalar var 1');
     my $a = [ 
-        Test10->new('scalar var 1'),
+        $b,
         Test10->new('scalar var 2'), 
-        Test10->new('scalar var 3')
+        Test10->new('scalar var 3'),
+        $b
     ];
     save_sample('medium_hook_array_three', $a);
 }
