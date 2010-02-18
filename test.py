@@ -67,10 +67,10 @@ expected = {
     },
     'x86_64-linux' : {
         '2.18' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : nr_of_tests,
-            'nstore'  : nr_of_tests
+            'nfreeze' : nr_of_tests + 9,
+            'freeze'  : nr_of_tests + 9,
+            'store'   : nr_of_tests + 9,
+            'nstore'  : nr_of_tests + 9
         },
         '2.21' : { 
             'nfreeze' : nr_of_tests,
@@ -257,7 +257,7 @@ class TestStorable(unittest.TestCase):
             traceback.print_exc(e)
 
         # dump it
-        if False:
+        if True:
             #print('writing output to '+outfile)
             outfh = open(outfile,'wb')
             outfh.write(str(data))
