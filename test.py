@@ -50,6 +50,12 @@ expected = {
             'store'   : nr_of_tests + 9,
             'nstore'  : nr_of_tests + 9
         },
+        '2.20' : { 
+            'nfreeze' : nr_of_tests + 9,
+            'freeze'  : nr_of_tests + 9,
+            'store'   : nr_of_tests + 9,
+            'nstore'  : nr_of_tests + 9
+        },
         '2.21' : { 
             'nfreeze' : nr_of_tests + 9,
             'freeze'  : nr_of_tests + 9,
@@ -177,6 +183,16 @@ class TestStorable(unittest.TestCase):
         self.run_tests('ppc-linux', '2.18', 'nstore')
     def test_ppc_linux_2_18_store(self):
         self.run_tests('ppc-linux', '2.18', 'store')
+
+    #
+    def test_ppc_linux_2_20_nfreeze(self):
+        self.run_tests('ppc-linux', '2.20', 'nfreeze')
+    def test_ppc_linux_2_20_freeze(self):
+        self.run_tests('ppc-linux', '2.20', 'freeze')
+    def test_ppc_linux_2_20_nstore(self):
+        self.run_tests('ppc-linux', '2.20', 'nstore')
+    def test_ppc_linux_2_20_store(self):
+        self.run_tests('ppc-linux', '2.20', 'store')
 
     #
     def test_ppc_linux_2_21_nfreeze(self):
