@@ -66,6 +66,9 @@ def SX_REF(fh, cache):
 def SX_UNDEF(fh, cache):
     return None
 
+def SX_INTEGER(fh, cache):
+    return unpack(cache['int_unpack_fmt'], fh.read(8))[0]
+
 def SX_DOUBLE(fh, cache):
     return unpack(cache['double_unpack_fmt'], fh.read(8))[0]
 
@@ -244,6 +247,7 @@ engine = {
     '\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
     '\x04': SX_REF,         # ( 4): Reference to object forthcoming
     '\x05': SX_UNDEF,       # ( 5): Undefined scalar
+    '\x06': SX_INTEGER,     # ( 6): Undefined scalar
     '\x07': SX_DOUBLE,      # ( 7): Double forthcoming
     '\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
     '\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
@@ -321,14 +325,14 @@ def deserialize(fh):
     if magic == '\x04':
         version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
-        byteorder = fh.read(size)
+        archsize = fh.read(size)
         #print("OK:freeze:" + str(byteorder))
 
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
         # 64-bit x86_64:  12345678
         
-        if byteorder == '1234' or byteorder == '12345678':
+        if archsize == '1234' or archsize == '12345678':
             byteorder = '<'
         else:
             byteorder = '>'
@@ -342,6 +346,7 @@ def deserialize(fh):
         'classes'           : [],
         'has_sx_object'     : False,
         'size_unpack_fmt'   : byteorder + 'I',
+        'int_unpack_fmt'    : byteorder + 'Q',
         'double_unpack_fmt' : byteorder + 'd'
     }
     data = process_item(fh, cache)
