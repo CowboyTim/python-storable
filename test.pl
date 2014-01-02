@@ -315,6 +315,22 @@ save_sample('ref04', \\\\@array);
     save_sample('medium_hook_array_three', $a);
 }
 
+{
+    save_sample('integer',    \44556677);
+}
+
+{
+    save_sample('biginteger', \112233445566778899);
+}
+
+{
+    save_sample('integer_array', [44556677, 556677]);
+}
+
+{
+    save_sample('integer_hash',  {44556677 => 'a', 556677 => 'b'});
+}
+
 sub save_sample {
     my ($what, $data) = @_;
     $count++;
