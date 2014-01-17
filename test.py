@@ -95,6 +95,12 @@ expected = {
             'freeze'  : nr_of_tests + 13,
             'store'   : nr_of_tests + 13,
             'nstore'  : nr_of_tests + 13
+        },
+        '2.41' : {
+            'nfreeze' : nr_of_tests + 13,
+            'freeze'  : nr_of_tests + 13,
+            'store'   : nr_of_tests + 13,
+            'nstore'  : nr_of_tests + 13
         }
     },
 }
@@ -259,6 +265,16 @@ class TestStorable(unittest.TestCase):
         self.run_tests('x86_64-linux', '2.29', 'nstore')
     def test_x86_64_linux_2_29_store(self):
         self.run_tests('x86_64-linux', '2.29', 'store')
+
+    #
+    def test_x86_64_linux_2_41_nfreeze(self):
+        self.run_tests('x86_64-linux', '2.41', 'nfreeze')
+    def test_x86_64_linux_2_41_freeze(self):
+        self.run_tests('x86_64-linux', '2.41', 'freeze')
+    def test_x86_64_linux_2_41_nstore(self):
+        self.run_tests('x86_64-linux', '2.41', 'nstore')
+    def test_x86_64_linux_2_41_store(self):
+        self.run_tests('x86_64-linux', '2.41', 'store')
 
     def run_tests(self, architecture, storableversion, type):
         d = mythaw
