@@ -16,5 +16,6 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Programming Language :: Perl',
+        'Programming Language :: Python',
     ]
 )
