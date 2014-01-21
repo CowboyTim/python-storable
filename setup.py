@@ -6,7 +6,7 @@ setup(
     name             = 'storable',
     version          = '0.1.0',
     description      = 'Python Perl Storable module',
-    author           = 'Tim Aerts',
+    author           = 'CowboyTim',
     author_email     = 'aardbeiplantje@gmail.com',
     url              = 'http://github.com/CowoboyTim/python-storable',
     license          = 'LICENSE.txt',
