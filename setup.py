@@ -8,7 +8,7 @@ setup(
     description      = 'Python Perl Storable module',
     author           = 'CowboyTim',
     author_email     = 'aardbeiplantje@gmail.com',
-    url              = 'http://github.com/CowoboyTim/python-storable',
+    url              = 'http://github.com/CowboyTim/python-storable',
     license          = 'LICENSE.txt',
     py_modules       = ['storable'],
     long_description = open('README.txt').read(),
