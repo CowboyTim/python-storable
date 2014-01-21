@@ -14,5 +14,7 @@ setup(
     long_description = open('README.txt').read(),
     classifiers      = [
         'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Programming Language :: Perl',
     ]
 )
