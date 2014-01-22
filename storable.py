@@ -27,10 +27,13 @@
 #
 
 from struct import unpack
-import cStringIO
+import io as cStringIO
 
 def _read_size(fh, cache):
     return unpack(cache['size_unpack_fmt'], fh.read(4))[0]
+
+def SX_IGNORE():
+    pass
 
 def SX_OBJECT(fh, cache):
     # idx's are always big-endian dumped by storable's freeze/nfreeze I think
@@ -240,35 +243,38 @@ def SX_FLAG_HASH(fh, cache):
     return data
 
 # *AFTER* all the subroutines
+#FIXME не обращает внимания на записи /n /r и распознает их как SX_SCALAR
 engine = {
-    '\x00': SX_OBJECT,      # ( 0): Already stored object
-    '\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
-    '\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
-    '\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
-    '\x04': SX_REF,         # ( 4): Reference to object forthcoming
-    '\x05': SX_UNDEF,       # ( 5): Undefined scalar
-    '\x06': SX_INTEGER,     # ( 6): Undefined scalar
-    '\x07': SX_DOUBLE,      # ( 7): Double forthcoming
-    '\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
-    '\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
-    '\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
-    '\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
-    '\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
-    '\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
-    '\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
-    '\x11': SX_BLESS,       # (17): Object is blessed
-    '\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
-    '\x13': SX_HOOK,        # (19): Stored via hook, user-defined
-    '\x14': SX_OVERLOAD,    # (20): Overloaded reference
-    '\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
-    '\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
-    '\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
-    '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
-    '\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
+    b'\n':SX_IGNORE,
+    b'\r':SX_IGNORE,
+    b'\x00': SX_OBJECT,      # ( 0): Already stored object
+    b'\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
+    b'\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
+    b'\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
+    b'\x04': SX_REF,         # ( 4): Reference to object forthcoming
+    b'\x05': SX_UNDEF,       # ( 5): Undefined scalar
+    b'\x06': SX_INTEGER,     # ( 6): Undefined scalar
+    b'\x07': SX_DOUBLE,      # ( 7): Double forthcoming
+    b'\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
+    b'\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
+    b'\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
+    b'\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
+    b'\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
+    b'\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
+    b'\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
+    b'\x11': SX_BLESS,       # (17): Object is blessed
+    b'\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
+    b'\x13': SX_HOOK,        # (19): Stored via hook, user-defined
+    b'\x14': SX_OVERLOAD,    # (20): Overloaded reference
+    b'\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
+    b'\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
+    b'\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
+    b'\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
+    b'\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
 }
 
 exclude_for_cache = dict({
-    '\x00':True, '\x0b':True, '\x0c':True, '\x0d':True, '\x11':True, '\x12':True
+    b'\x00':True, b'\x0b':True, b'\x0c':True, b'\x0d':True, b'\x11':True, b'\x12':True
 })
 
 def handle_sx_object_refs(cache, data):
@@ -276,10 +282,10 @@ def handle_sx_object_refs(cache, data):
     if type(data) is list:
         iterateelements = enumerate(iter(data))
     elif type(data) is dict:
-        iterateelements = data.iteritems()
+        iterateelements = iter(list(data.items()))
     else:
         return
-    
+
     for k,item in iterateelements:
         if type(item) is list or type(item) is dict:
             handle_sx_object_refs(cache, item)
@@ -289,19 +295,20 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
-    #print('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell())+',will do:'+str(engine[magic_type]))
+    print(magic_type)
+    print(('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell())+',will do:'+str(engine[magic_type])))
     if magic_type not in exclude_for_cache:
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
-        #print("set i:"+str(i))
+        # print("set i:"+str(i))
         cache['objects'][i] = engine[magic_type](fh, cache)
-        #print("set i:"+str(i)+",to:"+str(cache['objects'][i]))
+        # print("set i:"+str(i)+",to:"+str(cache['objects'][i]))
         return cache['objects'][i]
     else:
         return engine[magic_type](fh, cache)
-            
+
 def thaw(frozen_data):
-    fh = cStringIO.StringIO(frozen_data)
+    fh = cStringIO.BytesIO(frozen_data)
     data = deserialize(fh);
     fh.close();
     return data
@@ -318,15 +325,15 @@ def retrieve(file):
 def deserialize(fh):
     magic = fh.read(1)
     byteorder = '>'
-    if magic == '\x05':
+    if magic == b'\x05':
         version = fh.read(1)
-        #print("OK:nfreeze") 
+        #print("OK:nfreeze")
         #pass
-    if magic == '\x04':
+    if magic == b'\x04':
         version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
         archsize = fh.read(size)
-        #print("OK:freeze:" + str(byteorder))
+        # print("OK:freeze:" + str(byteorder))
 
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
@@ -339,7 +346,7 @@ def deserialize(fh):
 
         somethingtobeinvestigated = fh.read(4)
 
-    #print('version:'+str(unpack('B', version)[0]));
+    # print('version:'+str(unpack('B', version)[0]));
     cache = { 
         'objects'           : {},
         'objectnr'          : 0,
