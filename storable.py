@@ -27,7 +27,7 @@
 #
 
 from struct import unpack
-import cStringIO
+import io
 
 def _read_size(fh, cache):
     return unpack(cache['size_unpack_fmt'], fh.read(4))[0]
@@ -276,7 +276,7 @@ def handle_sx_object_refs(cache, data):
     if type(data) is list:
         iterateelements = enumerate(iter(data))
     elif type(data) is dict:
-        iterateelements = data.iteritems()
+        iterateelements = iter(data.items())
     else:
         return
     
@@ -301,7 +301,7 @@ def process_item(fh, cache):
         return engine[magic_type](fh, cache)
             
 def thaw(frozen_data):
-    fh = cStringIO.StringIO(frozen_data)
+    fh = io.StringIO(frozen_data)
     data = deserialize(fh);
     fh.close();
     return data
