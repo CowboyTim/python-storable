@@ -27,7 +27,7 @@
 #
 
 from struct import unpack
-import cStringIO
+import io
 
 def _read_size(fh, cache):
     return unpack(cache['size_unpack_fmt'], fh.read(4))[0]
@@ -115,7 +115,7 @@ def SX_TIED_KEY(fh, cache):
     data = process_item(fh, cache)
     key  = process_item(fh, cache)
     return data
-    
+
 def SX_TIED_IDX(fh, cache):
     data = process_item(fh, cache)
     # idx's are always big-endian dumped by storable's freeze/nfreeze I think
@@ -279,7 +279,7 @@ def handle_sx_object_refs(cache, data):
         iterateelements = data.iteritems()
     else:
         return
-    
+
     for k,item in iterateelements:
         if type(item) is list or type(item) is dict:
             handle_sx_object_refs(cache, item)
@@ -299,9 +299,9 @@ def process_item(fh, cache):
         return cache['objects'][i]
     else:
         return engine[magic_type](fh, cache)
-            
+
 def thaw(frozen_data):
-    fh = cStringIO.StringIO(frozen_data)
+    fh = io.StringIO(frozen_data)
     data = deserialize(fh);
     fh.close();
     return data
@@ -320,7 +320,7 @@ def deserialize(fh):
     byteorder = '>'
     if magic == '\x05':
         version = fh.read(1)
-        #print("OK:nfreeze") 
+        #print("OK:nfreeze")
         #pass
     if magic == '\x04':
         version = fh.read(1)
@@ -331,7 +331,7 @@ def deserialize(fh):
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
         # 64-bit x86_64:  12345678
-        
+
         if archsize == '1234' or archsize == '12345678':
             byteorder = '<'
         else:
@@ -340,7 +340,7 @@ def deserialize(fh):
         somethingtobeinvestigated = fh.read(4)
 
     #print('version:'+str(unpack('B', version)[0]));
-    cache = { 
+    cache = {
         'objects'           : {},
         'objectnr'          : 0,
         'classes'           : [],
