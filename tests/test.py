@@ -95,6 +95,12 @@ expected = {
             'freeze'  : nr_of_tests + 13,
             'store'   : nr_of_tests + 13,
             'nstore'  : nr_of_tests + 13
+        },
+        '2.41' : {
+            'nfreeze' : nr_of_tests + 13,
+            'freeze'  : nr_of_tests + 13,
+            'store'   : nr_of_tests + 13,
+            'nstore'  : nr_of_tests + 13
         }
     },
 }
@@ -132,7 +138,7 @@ def mythaw(infile):
     # thaw() it
     try:
         data = storable.thaw(data)
-    except Exception,e:
+    except Exception as e:
         traceback.print_exc(e)
 
     return data
@@ -260,6 +266,16 @@ class TestStorable(unittest.TestCase):
     def test_x86_64_linux_2_29_store(self):
         self.run_tests('x86_64-linux', '2.29', 'store')
 
+    #
+    def test_x86_64_linux_2_41_nfreeze(self):
+        self.run_tests('x86_64-linux', '2.41', 'nfreeze')
+    def test_x86_64_linux_2_41_freeze(self):
+        self.run_tests('x86_64-linux', '2.41', 'freeze')
+    def test_x86_64_linux_2_41_nstore(self):
+        self.run_tests('x86_64-linux', '2.41', 'nstore')
+    def test_x86_64_linux_2_41_store(self):
+        self.run_tests('x86_64-linux', '2.41', 'store')
+
     def run_tests(self, architecture, storableversion, type):
         d = mythaw
         if type in ['store', 'nstore']:
@@ -285,7 +301,7 @@ class TestStorable(unittest.TestCase):
             result_we_need = outfh.read()
             #print(str(result_we_need))
             outfh.close()
-        except Exception,e:
+        except Exception as e:
             traceback.print_exc(e)
 
         # dump it
@@ -298,8 +314,8 @@ class TestStorable(unittest.TestCase):
         # check
         try:
             self.assertEqual(str(data), str(result_we_need))
-        except AssertionError, e:
-            print('infile: '+str(infile)+' ,outfile: '+str(outfile))
+        except AssertionError as e:
+            print(('infile: '+str(infile)+' ,outfile: '+str(outfile)))
             raise e
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestStorable)
