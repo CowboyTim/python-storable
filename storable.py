@@ -33,6 +33,7 @@ def _read_size(fh, cache):
     return unpack(cache['size_unpack_fmt'], fh.read(4))[0]
 
 def SX_IGNORE():
+    print("SX_IGNORE")
     pass
 
 def SX_OBJECT(fh, cache):
@@ -42,14 +43,18 @@ def SX_OBJECT(fh, cache):
     return (0, i)
 
 def SX_LSCALAR(fh, cache):
-    return fh.read(_read_size(fh, cache))
+    v = fh.read(_read_size(fh, cache))
+    return v
 
 def SX_LUTF8STR(fh, cache):
-    return SX_LSCALAR(fh, cache)
+    v = fh.read(_read_size(fh, cache)).decode('utf-8')
+    return v
 
 def SX_ARRAY(fh, cache):
     data = []
-    for i in range(0,_read_size(fh, cache)):
+    array_size = _read_size(fh, cache)
+
+    for i in range(0, array_size):
         data.append(process_item(fh, cache))
 
     return data
@@ -58,7 +63,9 @@ def SX_HASH(fh, cache):
     data = {}
     for i in range(0,_read_size(fh, cache)):
         value = process_item(fh, cache)
-        key   = fh.read(_read_size(fh, cache))
+        # print("the value was: {}".format(value))
+        # the key will always have to be a string
+        key   = fh.read(_read_size(fh, cache)).decode('utf-8')
         data[key] = value
 
     return data
@@ -82,11 +89,14 @@ def SX_NETINT(fh, cache):
     return unpack('>I', fh.read(4))[0]
 
 def SX_SCALAR(fh, cache):
+    # scalar seems to normally be a string
+    # but could it be a number? I think so?
     size = unpack('B', fh.read(1))[0]
-    return fh.read(size)
+    return fh.read(size).decode('utf-8')
 
 def SX_UTF8STR(fh, cache):
-    return SX_SCALAR(fh, cache)
+    v = fh.read(_read_size(fh, cache)).decode('utf-8')
+    return v
 
 def SX_TIED_ARRAY(fh, cache):
     return process_item(fh, cache)
@@ -243,10 +253,9 @@ def SX_FLAG_HASH(fh, cache):
     return data
 
 # *AFTER* all the subroutines
-#FIXME не обращает внимания на записи /n /r и распознает их как SX_SCALAR
 engine = {
-    b'\n':SX_IGNORE,
-    b'\r':SX_IGNORE,
+    # b'\n':SX_IGNORE,
+    # b'\r':SX_IGNORE,
     b'\x00': SX_OBJECT,      # ( 0): Already stored object
     b'\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
     b'\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
@@ -295,16 +304,22 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
-    print(magic_type)
-    print(('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell())+',will do:'+str(engine[magic_type])))
+    # print("Magic: ", magic_type)
+
     if magic_type not in exclude_for_cache:
+        if magic_type == b'\n':
+            # print("W T F???")
+            # print(engine[magic_type])
+            # print(engine[b'\n'])
+            pass
+
         i = cache['objectnr']
         cache['objectnr'] = cache['objectnr']+1
-        # print("set i:"+str(i))
         cache['objects'][i] = engine[magic_type](fh, cache)
-        # print("set i:"+str(i)+",to:"+str(cache['objects'][i]))
+
         return cache['objects'][i]
     else:
+        # print("process_item returning from engine: {}".format(magic_type))
         return engine[magic_type](fh, cache)
 
 def thaw(frozen_data):
@@ -317,7 +332,7 @@ def retrieve(file):
     fh = open(file, 'rb')
     ignore = fh.read(4)
     data = None
-    if ignore == 'pst0':
+    if ignore == b'pst0':
         data = deserialize(fh)
     fh.close()
     return data
@@ -327,19 +342,19 @@ def deserialize(fh):
     byteorder = '>'
     if magic == b'\x05':
         version = fh.read(1)
-        #print("OK:nfreeze")
+        # print("OK:nfreeze")
         #pass
     if magic == b'\x04':
         version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
         archsize = fh.read(size)
-        # print("OK:freeze:" + str(byteorder))
+        # print("OK:freeze:" + str(archsize))
 
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
         # 64-bit x86_64:  12345678
-        
-        if archsize == '1234' or archsize == '12345678':
+
+        if archsize == b'1234' or archsize == b'12345678':
             byteorder = '<'
         else:
             byteorder = '>'
