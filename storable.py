@@ -26,7 +26,7 @@
 # Tim Aerts <aardbeiplantje@gmail.com>
 #
 
-from struct import unpack
+from struct import unpack, pack
 import io as cStringIO
 
 def _read_size(fh, cache):
@@ -254,8 +254,6 @@ def SX_FLAG_HASH(fh, cache):
 
 # *AFTER* all the subroutines
 engine = {
-    # b'\n':SX_IGNORE,
-    # b'\r':SX_IGNORE,
     b'\x00': SX_OBJECT,      # ( 0): Already stored object
     b'\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
     b'\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
@@ -337,6 +335,32 @@ def retrieve(file):
     fh.close()
     return data
 
+def store(data, filename):
+    fh = open(filename, 'wb')
+    fh.write(b'pst0') # main header magic
+    # version / arch / byte order magic
+    fh.write(b'\x04')
+    version = 10
+    fh.write(pack('B', version))
+    arch = b'12345678'
+    byteorder = '<'
+    fh.write(pack('B', len(arch)))
+    fh.write(arch)
+    
+    # some values that I don't understand???
+    # 04 0808 08
+    fh.write(b'\x04\x08\x08\x08')
+
+
+
+    # now pack the actual data
+    test_data = b'test'
+    fh.write(b'\x0a') # scalar follows
+    fh.write(pack('B', len(test_data)))
+    fh.write(test_data)
+
+    fh.close()
+
 def deserialize(fh):
     magic = fh.read(1)
     byteorder = '>'
@@ -361,7 +385,7 @@ def deserialize(fh):
 
         somethingtobeinvestigated = fh.read(4)
 
-    # print('version:'+str(unpack('B', version)[0]));
+    #print('version:'+str(unpack('B', version)[0]));
     cache = { 
         'objects'           : {},
         'objectnr'          : 0,
