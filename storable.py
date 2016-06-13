@@ -29,8 +29,17 @@
 from struct import unpack, pack
 import io as cStringIO
 
+
+DEBUG = 1
+def debug(*args, **kwargs):
+    if DEBUG:
+        print("-- ", *args, **kwargs)
+
 def _read_size(fh, cache):
     return unpack(cache['size_unpack_fmt'], fh.read(4))[0]
+
+def _write_size(fh, size):
+    fh.write(pack('<I', size))   
 
 def SX_IGNORE():
     print("SX_IGNORE")
@@ -83,6 +92,8 @@ def SX_DOUBLE(fh, cache):
     return unpack(cache['double_unpack_fmt'], fh.read(8))[0]
 
 def SX_BYTE(fh, cache):
+    # -128 why? Because this is actually a signed byte?
+    # is there not a format for unpack to read a signed byte?
     return unpack('B', fh.read(1))[0] - 128
 
 def SX_NETINT(fh, cache):
@@ -302,6 +313,7 @@ def handle_sx_object_refs(cache, data):
 
 def process_item(fh, cache):
     magic_type = fh.read(1)
+    debug("Magic: ", magic_type, "\t", engine[magic_type].__name__)
     # print("Magic: ", magic_type)
 
     if magic_type not in exclude_for_cache:
@@ -335,44 +347,116 @@ def retrieve(file):
     fh.close()
     return data
 
+
+FIRST = True
 def store(data, filename):
+    global FIRST
+    FIRST = True
+
     fh = open(filename, 'wb')
+
     fh.write(b'pst0') # main header magic
-    # version / arch / byte order magic
-    fh.write(b'\x04')
+
+    # version , arch / byte order magic
     version = 10
+    fh.write(b'\x04')
     fh.write(pack('B', version))
+
     arch = b'12345678'
     byteorder = '<'
     fh.write(pack('B', len(arch)))
     fh.write(arch)
-    
-    # some values that I don't understand???
-    # 04 0808 08
+
+    # Write the special magic
+    # purpose of this is unknown. deserialize ignores it
     fh.write(b'\x04\x08\x08\x08')
 
-
-
-    # now pack the actual data
-    test_data = b'test'
-    fh.write(b'\x0a') # scalar follows
-    fh.write(pack('B', len(test_data)))
-    fh.write(test_data)
+    store_item(fh, data)
 
     fh.close()
+
+def store_item(fh, item):
+    # determine item type
+    # DEBUG assume it is an int if it is not a list
+    if isinstance(item, list):
+        store_list(fh, item)
+    elif isinstance(item, dict):
+        store_dict(fh, item)
+    elif isinstance(item, int):
+        store_int(fh, item)
+    elif isinstance(item, float):
+        store_double(fh, item)
+    else: # default to string
+        store_string(fh, item)
+
+def store_list(fh, items):
+    global FIRST
+    if FIRST:
+        FIRST = False
+    else:
+        fh.write(b'\x04') # SX_REF magic
+
+    fh.write(b'\x02') # SX_ARRAY magic
+
+    list_size = len(items)
+
+    fh.write(pack('<I', list_size))
+
+    for i in items:
+        store_item(fh, i)
+
+def store_dict(fh, items):
+    global FIRST
+    if FIRST:
+        FIRST = False
+    else:
+        fh.write(b'\x04') # SX_REF magic
+    fh.write(b'\x03') # SX_HASH magic
+
+    # write the length of dict
+    dict_len = len(items)
+    _write_size(fh, dict_len)
+
+    # for each item:
+    for key, value in items.items():
+    #   write the value object (by calling store_item)
+        store_item(fh, value)
+    #   write the key length
+        key = str(key)
+        _write_size(fh, len(key))
+    #   write the key data (can only be a string!)
+        fh.write(key.encode('utf-8'))
+
+def store_int(fh, item):
+    fh.write(b'\x06') # SX_INTEGER magic
+    fh.write(pack('<Q', item))
+
+def store_double(fh, item):
+    fh.write(b'\x07') # SX_DOUBLE magic
+    fh.write(pack('<d', item))
+
+def store_string(fh, item):
+    item = str(item)  # in case it wasn't already
+    fh.write(b'\x0a') # SX_SCALAR magic
+
+    size = len(item)
+    fh.write(pack('B', size))
+
+    fh.write(item.encode('utf-8'))
+ 
 
 def deserialize(fh):
     magic = fh.read(1)
     byteorder = '>'
     if magic == b'\x05':
         version = fh.read(1)
-        # print("OK:nfreeze")
-        #pass
+        debug("OK:nfreeze")
     if magic == b'\x04':
         version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
         archsize = fh.read(size)
-        # print("OK:freeze:" + str(archsize))
+        debug("Version: ", version)
+        debug("Archsize ", archsize)
 
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
@@ -384,6 +468,7 @@ def deserialize(fh):
             byteorder = '>'
 
         somethingtobeinvestigated = fh.read(4)
+        debug("unknown 4byte magic: ", somethingtobeinvestigated)
 
     #print('version:'+str(unpack('B', version)[0]));
     cache = { 
