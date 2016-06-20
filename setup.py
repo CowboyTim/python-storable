@@ -10,7 +10,7 @@ setup(
     author_email     = 'quasar@ja.rosz.org',
     url              = 'https://github.com/quasarj/python-storable3',
     license          = 'LICENSE.txt',
-    py_modules       = ['storable'],
+    packages         = ['storable'],
     long_description = open('README.md').read(),
     classifiers      = [
         'Development Status :: 3 - Beta',
