@@ -1,5 +1,8 @@
 import storable
 
-data = 'test'
+
+# data = storable.retrieve('../pinfos/creation.pinfo')
+
+data = [None, None, 3]
 
 storable.store(data, 'storetest.pinfo')

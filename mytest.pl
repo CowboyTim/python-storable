@@ -1,3 +1,7 @@
 use Storable;
+use Data::Dumper;
 
-retrieve 'storetest.pinfo';
+my $data = retrieve 'storetest.pinfo';
+print ref($data), "\n";
+print Dumper($data);
+
