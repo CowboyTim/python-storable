@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+import os
+
 from setuptools import setup
+
+here = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name='storable',
@@ -11,7 +15,7 @@ setup(
     url='http://github.com/mike-hart/python-storable',
     license='LICENSE.txt',
     py_modules=['storable'],
-    long_description=open('README.txt').read(),
+    long_description=open(os.path.join(here, 'README.txt')).read(),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
