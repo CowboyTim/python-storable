@@ -27,7 +27,12 @@
 #
 
 from struct import (calcsize, unpack)
-import cStringIO as StringIO
+from io import BytesIO
+
+import six
+
+if six.PY3:
+    xrange = range
 
 
 def _read_size(fh, cache):
@@ -52,12 +57,13 @@ def SX_LUTF8STR(fh, cache):
 
 
 def SX_ARRAY(fh, cache):
-    return [process_item(fh, cache) for i in xrange(_read_size(fh, cache))]
+    return [process_item(fh, cache) for _ in xrange(_read_size(fh, cache))]
 
 
 def SX_HASH(fh, cache):
     data = {}
-    for i in xrange(_read_size(fh, cache)):
+    sz = _read_size(fh, cache)
+    for _ in xrange(sz):
         value = process_item(fh, cache)
         key = fh.read(_read_size(fh, cache))
         data[key] = value
@@ -255,38 +261,45 @@ def SX_LVSTRING(fh, cache):
 
 # *AFTER* all the subroutines
 engine = {
-    '\x00': SX_OBJECT,      # ( 0): Already stored object
-    '\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
-    '\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
-    '\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
-    '\x04': SX_REF,         # ( 4): Reference to object forthcoming
-    '\x05': SX_UNDEF,       # ( 5): Undefined scalar
-    '\x06': SX_INTEGER,     # ( 6): Integer forthcoming
-    '\x07': SX_DOUBLE,      # ( 7): Double forthcoming
-    '\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
-    '\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
-    '\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
-    '\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
-    '\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
-    '\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
-    '\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
-    '\x0f': SX_SV_YES,      # (15): Perl's immortal PL_sv_yes
-    '\x10': SX_SV_NO,       # (16): Perl's immortal PL_sv_no
-    '\x11': SX_BLESS,       # (17): Object is blessed
-    '\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
-    '\x13': SX_HOOK,        # (19): Stored via hook, user-defined
-    '\x14': SX_OVERLOAD,    # (20): Overloaded reference
-    '\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
-    '\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
-    '\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
-    '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
-    '\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
-    '\x1d': SX_VSTRING,     # (29): vstring forthcoming (small)
-    '\x1e': SX_LVSTRING,    # (30): vstring forthcoming (large)
+    b'\x00': SX_OBJECT,      # ( 0): Already stored object
+    b'\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
+    b'\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
+    b'\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
+    b'\x04': SX_REF,         # ( 4): Reference to object forthcoming
+    b'\x05': SX_UNDEF,       # ( 5): Undefined scalar
+    b'\x06': SX_INTEGER,     # ( 6): Integer forthcoming
+    b'\x07': SX_DOUBLE,      # ( 7): Double forthcoming
+    b'\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
+    b'\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
+    b'\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
+    b'\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
+    b'\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
+    b'\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
+    b'\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
+    b'\x0f': SX_SV_YES,      # (15): Perl's immortal PL_sv_yes
+    b'\x10': SX_SV_NO,       # (16): Perl's immortal PL_sv_no
+    b'\x11': SX_BLESS,       # (17): Object is blessed
+    b'\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
+    b'\x13': SX_HOOK,        # (19): Stored via hook, user-defined
+    b'\x14': SX_OVERLOAD,    # (20): Overloaded reference
+    b'\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
+    b'\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
+    b'\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
+    b'\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
+    b'\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
+    b'\x1d': SX_VSTRING,     # (29): vstring forthcoming (small)
+    b'\x1e': SX_LVSTRING,    # (30): vstring forthcoming (large)
 }
 
 
-exclude_for_cache = {'\x00', '\x0b', '\x0c', '\x0d', '\x11', '\x12'}
+exclude_for_cache = {
+    b'\x00',
+    b'\x0b',
+    b'\x0c',
+    b'\x0d',
+    b'\x11',
+    b'\x12',
+}
 
 
 def handle_sx_object_refs(cache, data):
@@ -294,7 +307,7 @@ def handle_sx_object_refs(cache, data):
     if type(data) is list:
         iterateelements = enumerate(data)
     elif type(data) is dict:
-        iterateelements = data.iteritems()
+        iterateelements = six.iteritems(data)
     else:
         return
 
@@ -319,14 +332,14 @@ def process_item(fh, cache):
 
 
 def thaw(frozen_data):
-    fh = StringIO.StringIO(frozen_data)
+    fh = BytesIO(frozen_data)
     return deserialize(fh)
 
 
-def retrieve(file):
-    with open(file, 'rb') as fh:
+def retrieve(filepath):
+    with open(filepath, 'rb') as fh:
         file_magic = fh.read(4)
-        if file_magic == 'pst0':
+        if file_magic == b'pst0':
             return deserialize(fh)
 
 
@@ -334,8 +347,16 @@ def _read_unsigned_byte(fh):
     return unpack('B', fh.read(1))[0]
 
 
+def skip_magic_header_if_present(fh):
+    file_magic = fh.read(4)
+    if file_magic != b'pst0':
+        fh.seek(0)
+
+
 def deserialize(fh):
+    skip_magic_header_if_present(fh)
     magic_byte = _read_unsigned_byte(fh)
+
     is_network_byte_order = (magic_byte & 1) == 1
     major_version_number = magic_byte >> 1
     minor_version_number = _read_unsigned_byte(fh)
@@ -364,12 +385,12 @@ def deserialize(fh):
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
         # 64-bit x86_64:  12345678
+        # 64-bit ppc:     87654321
 
-        if archsize == '1234' or archsize == '12345678':
+        if archsize == b'1234' or archsize == b'12345678':
             byteorder = '<'
         else:
             byteorder = '>'
-
         intsize, longsize, ptrsize = unpack('3B', fh.read(3))
         if (major_version_number, minor_version_number) >= (2, 2):
             nvsize = _read_unsigned_byte(fh)

@@ -138,7 +138,7 @@ def mythaw(infile):
     # thaw() it
     try:
         data = storable.thaw(data)
-    except Exception,e:
+    except Exception as e:
         traceback.print_exc(e)
 
     return data
@@ -301,7 +301,7 @@ class TestStorable(unittest.TestCase):
             result_we_need = outfh.read()
             #print(str(result_we_need))
             outfh.close()
-        except Exception,e:
+        except Exception as e:
             traceback.print_exc(e)
 
         # dump it
@@ -314,7 +314,7 @@ class TestStorable(unittest.TestCase):
         # check
         try:
             self.assertEqual(str(data), str(result_we_need))
-        except AssertionError, e:
+        except AssertionError as e:
             print('infile: '+str(infile)+' ,outfile: '+str(outfile))
             raise e
 
