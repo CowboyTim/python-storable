@@ -1,10 +1,11 @@
 #!/usr/bin/python
+from __future__ import print_function
 
-import unittest
+from os.path import basename
+from re import match, search
 import glob
 import traceback
-from re import match, search
-from os.path import basename
+import unittest
 
 import storable
 
