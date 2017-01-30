@@ -12,7 +12,7 @@ nr_of_tests = 36
 
 expected = {
     'ppc64-linux'   : {
-        '2.21' : { 
+        '2.21' : {
             'nfreeze' : nr_of_tests + 9,
             'freeze'  : nr_of_tests + 9,
             'store'   : nr_of_tests + 9,
@@ -20,7 +20,7 @@ expected = {
         }
     },
     'i386-darwin'   : {
-        '2.19' : { 
+        '2.19' : {
             'nfreeze' : nr_of_tests,
             'freeze'  : nr_of_tests,
             'store'   : nr_of_tests,
@@ -28,7 +28,7 @@ expected = {
         }
     },
     'i686-linux'   : {
-        '2.15' : { 
+        '2.15' : {
             'nfreeze' : nr_of_tests,
             'freeze'  : nr_of_tests,
             'store'   : 0,
@@ -36,7 +36,7 @@ expected = {
         }
     },
     'MSWin32'      : {
-        '2.15' : { 
+        '2.15' : {
             'nfreeze' : nr_of_tests,
             'freeze'  : nr_of_tests,
             'store'   : 0,
@@ -44,19 +44,19 @@ expected = {
         }
     },
     'ppc-linux'    : {
-        '2.18' : { 
+        '2.18' : {
             'nfreeze' : nr_of_tests + 9,
             'freeze'  : nr_of_tests + 9,
             'store'   : nr_of_tests + 9,
             'nstore'  : nr_of_tests + 9
         },
-        '2.20' : { 
+        '2.20' : {
             'nfreeze' : nr_of_tests + 9,
             'freeze'  : nr_of_tests + 9,
             'store'   : nr_of_tests + 9,
             'nstore'  : nr_of_tests + 9
         },
-        '2.21' : { 
+        '2.21' : {
             'nfreeze' : nr_of_tests + 9,
             'freeze'  : nr_of_tests + 9,
             'store'   : nr_of_tests + 9,
@@ -64,7 +64,7 @@ expected = {
         }
     },
     'sun4-solaris' : {
-        '2.08' : { 
+        '2.08' : {
             'nfreeze' : nr_of_tests,
             'freeze'  : nr_of_tests,
             'store'   : 0,
@@ -72,19 +72,19 @@ expected = {
         }
     },
     'x86_64-linux' : {
-        '2.18' : { 
+        '2.18' : {
             'nfreeze' : nr_of_tests + 9,
             'freeze'  : nr_of_tests + 9,
             'store'   : nr_of_tests + 9,
             'nstore'  : nr_of_tests + 9
         },
-        '2.21' : { 
+        '2.21' : {
             'nfreeze' : nr_of_tests,
             'freeze'  : nr_of_tests,
             'store'   : nr_of_tests,
             'nstore'  : nr_of_tests
         },
-        '2.19' : { 
+        '2.19' : {
             'nfreeze' : nr_of_tests + 9,
             'freeze'  : nr_of_tests + 9,
             'store'   : nr_of_tests + 9,
@@ -130,12 +130,10 @@ def determine_outfile(infile):
         return res + '/' + testcase + '.py'
 
 def mythaw(infile):
-    #print('reading from infile:'+infile)
     infh = open(infile, 'rb')
     data = infh.read()
     infh.close()
 
-    # thaw() it
     try:
         data = storable.thaw(data)
     except Exception,e:
@@ -143,10 +141,9 @@ def mythaw(infile):
 
     return data
 
-        
+
 class TestStorable(unittest.TestCase):
 
-    #
     def test_ppc64_linux_2_21_nfreeze(self):
         self.run_tests('ppc64-linux', '2.21', 'nfreeze')
     def test_ppc64_linux_2_21_freeze(self):
@@ -156,7 +153,6 @@ class TestStorable(unittest.TestCase):
     def test_ppc64_linux_2_21_store(self):
         self.run_tests('ppc64-linux', '2.21', 'store')
 
-    #
     def test_i386_darwin_2_19_nfreeze(self):
         self.run_tests('i386-darwin', '2.19', 'nfreeze')
     def test_i386_darwin_2_19_freeze(self):
@@ -166,7 +162,6 @@ class TestStorable(unittest.TestCase):
     def test_i386_darwin_2_19_store(self):
         self.run_tests('i386-darwin', '2.19', 'store')
 
-    #
     def test_i686_linux_2_15_nfreeze(self):
         self.run_tests('i686-linux', '2.15', 'nfreeze')
     def test_i686_linux_2_15_freeze(self):
@@ -176,7 +171,6 @@ class TestStorable(unittest.TestCase):
     def test_i686_linux_2_15_store(self):
         self.run_tests('i686-linux', '2.15', 'store')
 
-    #
     def test_MSWin32_2_15_nfreeze(self):
         self.run_tests('MSWin32', '2.15', 'nfreeze')
     def test_MSWin32_2_15_freeze(self):
@@ -186,7 +180,6 @@ class TestStorable(unittest.TestCase):
     def test_MSWin32_2_15_store(self):
         self.run_tests('MSWin32', '2.15', 'store')
 
-    #
     def test_ppc_linux_2_18_nfreeze(self):
         self.run_tests('ppc-linux', '2.18', 'nfreeze')
     def test_ppc_linux_2_18_freeze(self):
@@ -196,7 +189,6 @@ class TestStorable(unittest.TestCase):
     def test_ppc_linux_2_18_store(self):
         self.run_tests('ppc-linux', '2.18', 'store')
 
-    #
     def test_ppc_linux_2_20_nfreeze(self):
         self.run_tests('ppc-linux', '2.20', 'nfreeze')
     def test_ppc_linux_2_20_freeze(self):
@@ -206,7 +198,6 @@ class TestStorable(unittest.TestCase):
     def test_ppc_linux_2_20_store(self):
         self.run_tests('ppc-linux', '2.20', 'store')
 
-    #
     def test_ppc_linux_2_21_nfreeze(self):
         self.run_tests('ppc-linux', '2.21', 'nfreeze')
     def test_ppc_linux_2_21_freeze(self):
@@ -216,7 +207,6 @@ class TestStorable(unittest.TestCase):
     def test_ppc_linux_2_21_store(self):
         self.run_tests('ppc-linux', '2.21', 'store')
 
-    #
     def test_sun4_solaris_2_08_nfreeze(self):
         self.run_tests('sun4-solaris', '2.08', 'nfreeze')
     def test_sun4_solaris_2_08_freeze(self):
@@ -226,7 +216,6 @@ class TestStorable(unittest.TestCase):
     def test_sun4_solaris_2_08_store(self):
         self.run_tests('sun4-solaris', '2.08', 'store')
 
-    #
     def test_x86_64_linux_2_18_nfreeze(self):
         self.run_tests('x86_64-linux', '2.18', 'nfreeze')
     def test_x86_64_linux_2_18_freeze(self):
@@ -236,7 +225,6 @@ class TestStorable(unittest.TestCase):
     def test_x86_64_linux_2_18_store(self):
         self.run_tests('x86_64-linux', '2.18', 'store')
 
-    #
     def test_x86_64_linux_2_21_nfreeze(self):
         self.run_tests('x86_64-linux', '2.21', 'nfreeze')
     def test_x86_64_linux_2_21_freeze(self):
@@ -246,7 +234,6 @@ class TestStorable(unittest.TestCase):
     def test_x86_64_linux_2_21_store(self):
         self.run_tests('x86_64-linux', '2.21', 'store')
 
-    #
     def test_x86_64_linux_2_19_nfreeze(self):
         self.run_tests('x86_64-linux', '2.19', 'nfreeze')
     def test_x86_64_linux_2_19_freeze(self):
@@ -256,7 +243,6 @@ class TestStorable(unittest.TestCase):
     def test_x86_64_linux_2_19_store(self):
         self.run_tests('x86_64-linux', '2.19', 'store')
 
-    #
     def test_x86_64_linux_2_29_nfreeze(self):
         self.run_tests('x86_64-linux', '2.29', 'nfreeze')
     def test_x86_64_linux_2_29_freeze(self):
@@ -266,7 +252,6 @@ class TestStorable(unittest.TestCase):
     def test_x86_64_linux_2_29_store(self):
         self.run_tests('x86_64-linux', '2.29', 'store')
 
-    #
     def test_x86_64_linux_2_41_nfreeze(self):
         self.run_tests('x86_64-linux', '2.41', 'nfreeze')
     def test_x86_64_linux_2_41_freeze(self):
@@ -299,14 +284,12 @@ class TestStorable(unittest.TestCase):
         try:
             outfh = open(outfile,'rb')
             result_we_need = outfh.read()
-            #print(str(result_we_need))
             outfh.close()
         except Exception,e:
             traceback.print_exc(e)
 
         # dump it
         if True:
-            #print('writing output to '+outfile)
             outfh = open(outfile,'wb')
             outfh.write(str(data))
             outfh.close()
