@@ -42,12 +42,7 @@ def mythaw(infile):
     infh = open(infile, 'rb')
     data = infh.read()
     infh.close()
-
-    try:
-        data = storable.thaw(data)
-    except Exception as e:
-        traceback.print_exc(e)
-
+    data = storable.thaw(data)
     return data
 
 
