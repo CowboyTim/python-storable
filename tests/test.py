@@ -45,7 +45,7 @@ def mythaw(infile):
 
     try:
         data = storable.thaw(data)
-    except Exception,e:
+    except Exception as e:
         traceback.print_exc(e)
 
     return data

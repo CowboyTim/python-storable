@@ -27,10 +27,9 @@
 #
 
 from functools import wraps
+from io import BytesIO
 from struct import unpack
-import cStringIO
 import logging
-
 
 
 LOG = logging.getLogger(__name__)
@@ -272,34 +271,34 @@ def SX_FLAG_HASH(fh, cache):
 
 # *AFTER* all the subroutines
 engine = {
-    '\x00': SX_OBJECT,      # ( 0): Already stored object
-    '\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
-    '\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
-    '\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
-    '\x04': SX_REF,         # ( 4): Reference to object forthcoming
-    '\x05': SX_UNDEF,       # ( 5): Undefined scalar
-    '\x06': SX_INTEGER,     # ( 6): Undefined scalar
-    '\x07': SX_DOUBLE,      # ( 7): Double forthcoming
-    '\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
-    '\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
-    '\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
-    '\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
-    '\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
-    '\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
-    '\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
-    '\x11': SX_BLESS,       # (17): Object is blessed
-    '\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
-    '\x13': SX_HOOK,        # (19): Stored via hook, user-defined
-    '\x14': SX_OVERLOAD,    # (20): Overloaded reference
-    '\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
-    '\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
-    '\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
-    '\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
-    '\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
+    b'\x00': SX_OBJECT,      # ( 0): Already stored object
+    b'\x01': SX_LSCALAR,     # ( 1): Scalar (large binary) follows (length, data)
+    b'\x02': SX_ARRAY,       # ( 2): Array forthcoming (size, item list)
+    b'\x03': SX_HASH,        # ( 3): Hash forthcoming (size, key/value pair list)
+    b'\x04': SX_REF,         # ( 4): Reference to object forthcoming
+    b'\x05': SX_UNDEF,       # ( 5): Undefined scalar
+    b'\x06': SX_INTEGER,     # ( 6): Undefined scalar
+    b'\x07': SX_DOUBLE,      # ( 7): Double forthcoming
+    b'\x08': SX_BYTE,        # ( 8): (signed) byte forthcoming
+    b'\x09': SX_NETINT,      # ( 9): Integer in network order forthcoming
+    b'\x0a': SX_SCALAR,      # (10): Scalar (binary, small) follows (length, data)
+    b'\x0b': SX_TIED_ARRAY,  # (11): Tied array forthcoming
+    b'\x0c': SX_TIED_HASH,   # (12): Tied hash forthcoming
+    b'\x0d': SX_TIED_SCALAR, # (13): Tied scalar forthcoming
+    b'\x0e': SX_SV_UNDEF,    # (14): Perl's immortal PL_sv_undef
+    b'\x11': SX_BLESS,       # (17): Object is blessed
+    b'\x12': SX_IX_BLESS,    # (18): Object is blessed, classname given by index
+    b'\x13': SX_HOOK,        # (19): Stored via hook, user-defined
+    b'\x14': SX_OVERLOAD,    # (20): Overloaded reference
+    b'\x15': SX_TIED_KEY,    # (21): Tied magic key forthcoming
+    b'\x16': SX_TIED_IDX,    # (22): Tied magic index forthcoming
+    b'\x17': SX_UTF8STR,     # (23): UTF-8 string forthcoming (small)
+    b'\x18': SX_LUTF8STR,    # (24): UTF-8 string forthcoming (large)
+    b'\x19': SX_FLAG_HASH,   # (25): Hash with flags forthcoming (size, flags, key/flags/value triplet list)
 }
 
 exclude_for_cache = dict({
-    '\x00':True, '\x0b':True, '\x0c':True, '\x0d':True, '\x11':True, '\x12':True
+    b'\x00':True, b'\x0b':True, b'\x0c':True, b'\x0d':True, b'\x11':True, b'\x12':True
 })
 
 @maybelogged
@@ -308,7 +307,7 @@ def handle_sx_object_refs(cache, data):
     if type(data) is list:
         iterateelements = enumerate(iter(data))
     elif type(data) is dict:
-        iterateelements = data.iteritems()
+        iterateelements = data.items()
     else:
         return
 
@@ -332,7 +331,7 @@ def process_item(fh, cache):
 
 @maybelogged
 def thaw(frozen_data):
-    fh = cStringIO.StringIO(frozen_data)
+    fh = BytesIO(frozen_data)
     data = deserialize(fh);
     fh.close();
     return data
@@ -342,7 +341,7 @@ def retrieve(file):
     fh = open(file, 'rb')
     ignore = fh.read(4)
     data = None
-    if ignore == 'pst0':
+    if ignore == b'pst0':
         data = deserialize(fh)
     fh.close()
     return data
@@ -351,9 +350,9 @@ def retrieve(file):
 def deserialize(fh):
     magic = fh.read(1)
     byteorder = '>'
-    if magic == '\x05':
+    if magic == b'\x05':
         version = fh.read(1)
-    if magic == '\x04':
+    if magic == b'\x04':
         version = fh.read(1)
         size  = unpack('B', fh.read(1))[0]
         archsize = fh.read(size)
@@ -362,7 +361,7 @@ def deserialize(fh):
         # 32-bit x86:     1234
         # 64-bit x86_64:  12345678
 
-        if archsize == '1234' or archsize == '12345678':
+        if archsize == b'1234' or archsize == b'12345678':
             byteorder = '<'
         else:
             byteorder = '>'
