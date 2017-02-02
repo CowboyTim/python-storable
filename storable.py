@@ -81,7 +81,7 @@ def SX_LSCALAR(fh, cache):
 
 @maybelogged
 def SX_LUTF8STR(fh, cache):
-    return SX_LSCALAR(fh, cache)
+    return SX_LSCALAR(fh, cache).decode('utf8')
 
 @maybelogged
 def SX_ARRAY(fh, cache):
@@ -132,7 +132,7 @@ def SX_SCALAR(fh, cache):
 
 @maybelogged
 def SX_UTF8STR(fh, cache):
-    return SX_SCALAR(fh, cache)
+    return SX_SCALAR(fh, cache).decode('utf8')
 
 @maybelogged
 def SX_TIED_ARRAY(fh, cache):
