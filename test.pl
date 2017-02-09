@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+use lib 'perl-modules';
 use strict; use warnings;
 
 use FindBin;
