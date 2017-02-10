@@ -26,24 +26,65 @@
 # Tim Aerts <aardbeiplantje@gmail.com>
 #
 
+from functools import wraps
 from struct import unpack
 import cStringIO
+import logging
 
+
+
+LOG = logging.getLogger(__name__)
+DEBUG = False
+
+
+def id_():
+    n = 0
+    while True:
+        n += 1
+        yield n
+
+ID_GENERATOR = id_()
+
+def maybelogged(f):
+    """
+    If the DEBUG flag is set in this module (must be set before importing),
+    deserialisation functions will be logged.
+    """
+
+    if not DEBUG:
+        return f
+
+    @wraps(f)
+    def fun(*args, **kwargs):
+        id_ = next(ID_GENERATOR)
+        LOG.debug('[%s] Entering %s with args=%r, kwargs=%r',
+                  id_, f.__name__, args, kwargs)
+        output = f(*args, **kwargs)
+        LOG.debug('[%s] Result: %r', id_, output)
+        return output
+    return fun
+
+
+@maybelogged
 def _read_size(fh, cache):
     return unpack(cache['size_unpack_fmt'], fh.read(4))[0]
 
+@maybelogged
 def SX_OBJECT(fh, cache):
     # idx's are always big-endian dumped by storable's freeze/nfreeze I think
     i = unpack('>I', fh.read(4))[0]
     cache['has_sx_object'] = True
     return (0, i)
 
+@maybelogged
 def SX_LSCALAR(fh, cache):
     return fh.read(_read_size(fh, cache))
 
+@maybelogged
 def SX_LUTF8STR(fh, cache):
     return SX_LSCALAR(fh, cache)
 
+@maybelogged
 def SX_ARRAY(fh, cache):
     data = []
     for i in range(0,_read_size(fh, cache)):
@@ -51,6 +92,7 @@ def SX_ARRAY(fh, cache):
 
     return data
 
+@maybelogged
 def SX_HASH(fh, cache):
     data = {}
     for i in range(0,_read_size(fh, cache)):
@@ -60,68 +102,86 @@ def SX_HASH(fh, cache):
 
     return data
 
+@maybelogged
 def SX_REF(fh, cache):
     return process_item(fh, cache)
 
+@maybelogged
 def SX_UNDEF(fh, cache):
     return None
 
+@maybelogged
 def SX_INTEGER(fh, cache):
     return unpack(cache['int_unpack_fmt'], fh.read(8))[0]
 
+@maybelogged
 def SX_DOUBLE(fh, cache):
     return unpack(cache['double_unpack_fmt'], fh.read(8))[0]
 
+@maybelogged
 def SX_BYTE(fh, cache):
     return unpack('B', fh.read(1))[0] - 128
 
+@maybelogged
 def SX_NETINT(fh, cache):
     return unpack('>I', fh.read(4))[0]
 
+@maybelogged
 def SX_SCALAR(fh, cache):
     size = unpack('B', fh.read(1))[0]
     return fh.read(size)
 
+@maybelogged
 def SX_UTF8STR(fh, cache):
     return SX_SCALAR(fh, cache)
 
+@maybelogged
 def SX_TIED_ARRAY(fh, cache):
     return process_item(fh, cache)
 
+@maybelogged
 def SX_TIED_HASH(fh, cache):
     return SX_TIED_ARRAY(fh, cache)
 
+@maybelogged
 def SX_TIED_SCALAR(fh, cache):
     return SX_TIED_ARRAY(fh, cache)
 
+@maybelogged
 def SX_SV_UNDEF(fh, cache):
     return None
 
+@maybelogged
 def SX_BLESS(fh, cache):
     size = unpack('B', fh.read(1))[0]
     package_name = fh.read(size)
     cache['classes'].append(package_name)
     return process_item(fh, cache)
 
+@maybelogged
 def SX_IX_BLESS(fh, cache):
     indx = unpack('B', fh.read(1))[0]
     package_name = cache['classes'][indx]
     return process_item(fh, cache)
 
+@maybelogged
 def SX_OVERLOAD(fh, cache):
     return process_item(fh, cache)
 
+@maybelogged
 def SX_TIED_KEY(fh, cache):
     data = process_item(fh, cache)
     key  = process_item(fh, cache)
     return data
-    
+
+@maybelogged
 def SX_TIED_IDX(fh, cache):
     data = process_item(fh, cache)
     # idx's are always big-endian dumped by storable's freeze/nfreeze I think
     indx_in_array = unpack('>I', fh.read(4))[0]
     return data
 
+@maybelogged
 def SX_HOOK(fh, cache):
     flags = unpack('B', fh.read(1))[0]
 
@@ -220,6 +280,7 @@ def SX_HOOK(fh, cache):
 
     return data
 
+@maybelogged
 def SX_FLAG_HASH(fh, cache):
     # TODO: NOT YET IMPLEMENTED!!!!!!
     #print("SX_FLAG_HASH:where:"+str(fh.tell()))
@@ -271,6 +332,7 @@ exclude_for_cache = dict({
     '\x00':True, '\x0b':True, '\x0c':True, '\x0d':True, '\x11':True, '\x12':True
 })
 
+@maybelogged
 def handle_sx_object_refs(cache, data):
     iterateelements = None
     if type(data) is list:
@@ -279,7 +341,7 @@ def handle_sx_object_refs(cache, data):
         iterateelements = data.iteritems()
     else:
         return
-    
+
     for k,item in iterateelements:
         if type(item) is list or type(item) is dict:
             handle_sx_object_refs(cache, item)
@@ -287,6 +349,7 @@ def handle_sx_object_refs(cache, data):
             data[k] = cache['objects'][item[1]]
     return data
 
+@maybelogged
 def process_item(fh, cache):
     magic_type = fh.read(1)
     #print('magic:'+str(unpack('B',magic_type)[0])+",where:"+str(fh.tell())+',will do:'+str(engine[magic_type]))
@@ -299,13 +362,15 @@ def process_item(fh, cache):
         return cache['objects'][i]
     else:
         return engine[magic_type](fh, cache)
-            
+
+@maybelogged
 def thaw(frozen_data):
     fh = cStringIO.StringIO(frozen_data)
     data = deserialize(fh);
     fh.close();
     return data
 
+@maybelogged
 def retrieve(file):
     fh = open(file, 'rb')
     ignore = fh.read(4)
@@ -315,12 +380,13 @@ def retrieve(file):
     fh.close()
     return data
 
+@maybelogged
 def deserialize(fh):
     magic = fh.read(1)
     byteorder = '>'
     if magic == '\x05':
         version = fh.read(1)
-        #print("OK:nfreeze") 
+        #print("OK:nfreeze")
         #pass
     if magic == '\x04':
         version = fh.read(1)
@@ -331,7 +397,7 @@ def deserialize(fh):
         # 32-bit ppc:     4321
         # 32-bit x86:     1234
         # 64-bit x86_64:  12345678
-        
+
         if archsize == '1234' or archsize == '12345678':
             byteorder = '<'
         else:
@@ -340,7 +406,7 @@ def deserialize(fh):
         somethingtobeinvestigated = fh.read(4)
 
     #print('version:'+str(unpack('B', version)[0]));
-    cache = { 
+    cache = {
         'objects'           : {},
         'objectnr'          : 0,
         'classes'           : [],
