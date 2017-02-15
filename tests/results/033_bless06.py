@@ -7,5 +7,5 @@ result = [
     ['TestA'],
     ['TestB'],
     ['TestC'],
-    ['TestD', {'0': []}]
+    ['TestD', {0: []}]
 ]

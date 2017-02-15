@@ -55,6 +55,10 @@ def make_function(deserializer, infile, outfile):
         # but calling ``skipTest`` instead makes it more visible that
         # something was not exeuted and test-runners like pytest can report
         # on this.
+        if any(['024_complex05' in infile,
+                '025_complex06' in infile,
+                '026_complex07' in infile]):
+            test_instance.skipTest('Recursion not yet possible (due to eval)')
         if not exists(outfile):
             test_instance.skipTest(
                 'Expected output file %r not found!' % outfile)

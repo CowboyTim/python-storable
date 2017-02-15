@@ -1,5 +1,5 @@
 result = {
-    0: '0',
+    0: 0,
     1: None,
     2: None,
     3: None,

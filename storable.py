@@ -35,6 +35,29 @@ import logging
 LOG = logging.getLogger(__name__)
 DEBUG = False
 
+def _guess_type(data):
+    """
+    In Perl, the "scalar" type maps to different Python types. Strictly
+    speaking, the only *correct* output would be bytes objects. But this causes
+    a discrepancy when using "frozen" storables and non-frozen storables (unless
+    the generated test-data is wrong). For now, we will use the conversion
+    functions below to "guess" the type.
+    """
+    guesses = (
+        int,
+        float,
+        lambda x: x.decode('ascii'),
+        lambda x: x.decode('utf8'),
+    )
+    converted_result = None
+    for guess in guesses:
+        try:
+            converted_result = guess(data)
+            break
+        except ValueError:
+            pass
+    return data if converted_result is None else converted_result
+
 
 def id_():
     n = 0
@@ -77,11 +100,12 @@ def SX_OBJECT(fh, cache):
 
 @maybelogged
 def SX_LSCALAR(fh, cache):
-    return fh.read(_read_size(fh, cache))
+    raw_result = fh.read(_read_size(fh, cache))
+    return _guess_type(raw_result)
 
 @maybelogged
 def SX_LUTF8STR(fh, cache):
-    return SX_LSCALAR(fh, cache).decode('utf8')
+    return SX_LSCALAR(fh, cache)
 
 @maybelogged
 def SX_ARRAY(fh, cache):
@@ -96,8 +120,9 @@ def SX_HASH(fh, cache):
     data = {}
     for i in range(0,_read_size(fh, cache)):
         value = process_item(fh, cache)
-        key   = fh.read(_read_size(fh, cache))
+        key   = _guess_type(fh.read(_read_size(fh, cache)))
         data[key] = value
+        LOG.info('->> key %r', key)
 
     return data
 
@@ -128,11 +153,12 @@ def SX_NETINT(fh, cache):
 @maybelogged
 def SX_SCALAR(fh, cache):
     size = unpack('B', fh.read(1))[0]
-    return fh.read(size)
+    raw_result = fh.read(size)
+    return _guess_type(raw_result)
 
 @maybelogged
 def SX_UTF8STR(fh, cache):
-    return SX_SCALAR(fh, cache).decode('utf8')
+    return SX_SCALAR(fh, cache)
 
 @maybelogged
 def SX_TIED_ARRAY(fh, cache):
@@ -215,7 +241,7 @@ def SX_HOOK(fh, cache):
         str_size = unpack('B', fh.read(1))[0]
 
     if str_size:
-        frozen_str = fh.read(str_size)
+        frozen_str = _guess_type(fh.read(str_size))
         arguments[0] = frozen_str
 
     list_size = 0
