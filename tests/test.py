@@ -59,10 +59,6 @@ def make_function(deserializer, infile, outfile):
             test_instance.skipTest(
                 'Expected output file %r not found!' % outfile)
 
-        if 'complex05' in outfile:
-            test_instance.skipTest(
-                'Temporarily skipping test for %r' % outfile)
-
         # "infile" is to "storable" file which we want to decode.
         data = deserializer(infile)
         assertion_function = test_instance.assertEqual
