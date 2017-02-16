@@ -55,9 +55,7 @@ def make_function(deserializer, infile, outfile):
         # but calling ``skipTest`` instead makes it more visible that
         # something was not exeuted and test-runners like pytest can report
         # on this.
-        if any(['024_complex05' in infile,
-                '025_complex06' in infile,
-                '026_complex07' in infile]):
+        if any(['026_complex07' in infile]):
             test_instance.skipTest('Recursion not yet possible (due to eval)')
         if not exists(outfile):
             test_instance.skipTest(
@@ -65,6 +63,7 @@ def make_function(deserializer, infile, outfile):
 
         # "infile" is to "storable" file which we want to decode.
         data = deserializer(infile)
+        assertion_function = test_instance.assertEqual
         try:
             with open(outfile) as fp:
                 code = fp.read()
@@ -72,6 +71,8 @@ def make_function(deserializer, infile, outfile):
                 expected_scope = {}
                 exec(compiled, expected_scope)
                 result_we_need = expected_scope['result']
+                if 'is_equal' in expected_scope:
+                    assertion_function = expected_scope['is_equal']
         except KeyError as exc:
             test_instance.skipTest(
                 'File %r should define the variable "result"!' % outfile)
@@ -80,7 +81,7 @@ def make_function(deserializer, infile, outfile):
                 'Unable to compile %r (%s)' % (outfile, exc))
 
         # Now we have proper data which we can compare in detail.
-        test_instance.assertEqual(
+        assertion_function(
             data, result_we_need,
             'Deserialisation of %r did not equal the data '
             'given in %r' % (infile, outfile))
