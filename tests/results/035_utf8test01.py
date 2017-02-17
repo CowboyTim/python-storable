@@ -1,1 +1,1 @@
-result = "☺"
+result = "\u263a"

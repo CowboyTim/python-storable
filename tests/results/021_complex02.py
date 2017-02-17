@@ -1,1 +1,2 @@
-result = {'cc': 'bb', 'aa': 'bb'}
+result = {'aa': 'bb'}
+result['cc'] = result['aa']
