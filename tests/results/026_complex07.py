@@ -1,1 +1,1 @@
-[None, 'yy', [...]]
+result = [None, 'yy', [...]]

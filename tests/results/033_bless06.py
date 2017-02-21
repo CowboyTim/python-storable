@@ -1,1 +1,11 @@
-[{}, [], [], None, None, ['TestA'], ['TestB'], ['TestC'], ['TestD', {'0': []}]]
+result = [
+    {},
+    [],
+    [],
+    None,
+    None,
+    ['TestA'],
+    ['TestB'],
+    ['TestC'],
+    ['TestD', {'0': []}]
+]
