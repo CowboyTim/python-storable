@@ -1,1 +1,1 @@
-Some scalar, less then 255 bytes size
+result = "Some scalar, less then 255 bytes size"
