@@ -1,21 +1,42 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
+# To use a consistent encoding
+from codecs import open
+from os import path
+
+from setuptools import setup
+
+
+here = path.abspath(path.dirname(__file__))
+
+# Get the long description from the README file
+with open(path.join(here, 'README.txt'), encoding='utf-8') as f:
+    long_description = f.read()
+
 
 setup(
-    name             = 'storable',
-    version          = '0.1.0',
-    description      = 'Python Perl Storable module',
-    author           = 'CowboyTim',
-    author_email     = 'aardbeiplantje@gmail.com',
-    url              = 'http://github.com/CowboyTim/python-storable',
-    license          = 'LICENSE.txt',
-    py_modules       = ['storable'],
-    long_description = open('README.txt').read(),
-    classifiers      = [
+    name='storable',
+    version='0.2.1',
+
+    description='Python Perl Storable module',
+    long_description=long_description,
+
+    url='http://github.com/mike-hart/python-storable',
+
+    author='Michael Hart',
+    author_email='hart.michael+github@gmail.com',
+
+    license='zlib/libpng',
+
+    py_modules=['storable'],
+    install_requires=['six'],
+    package_data={'': ['LICENSE.txt']},
+    classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Programming Language :: Perl',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: zlib/libpng License',
     ]
 )
