@@ -59,7 +59,7 @@ def make_function(deserializer, infile, outfile):
             test_instance.skipTest(
                 'Expected output file %r not found!' % outfile)
 
-        # "infile" is to "storable" file which we want to decode.
+        # "infile" is the "storable" file which we want to decode.
         data = deserializer(infile)
         assertion_function = test_instance.assertEqual
         try:
