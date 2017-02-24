@@ -27,9 +27,9 @@ for result in sorted(glob.glob(res + '/*.freeze.py')):
     special_tests[result] = 1
 
 
-def determine_outfile(infile):
-    outfile = basename(infile)
-    group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze|store|nstore)\.storable$", outfile)
+def determine_outfile(storable_fname):
+    group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze|store|nstore)\.storable$",
+                  basename(storable_fname))
     testcase = group.group(1)
     freeze   = group.group(2)
     if freeze == 'freeze' and testcase in special_tests:
@@ -38,34 +38,34 @@ def determine_outfile(infile):
         return res + '/' + testcase + '.py'
 
 
-def mythaw(infile):
-    infh = open(infile, 'rb')
+def mythaw(storable_fname):
+    infh = open(storable_fname, 'rb')
     data = infh.read()
     infh.close()
     data = storable.thaw(data)
     return data
 
 
-def make_function(deserializer, infile, outfile):
+def make_function(deserializer, storable_fname, python_fname):
     def fun(test_instance):
 
         # If certain files are not found, we dont want to continue the test.
-        # "infile" came from "glob" so we don't need to test that.
+        # "storable_fname" came from "glob" so we don't need to test that.
         # We could also skip the attachment of the unit-test alltogether,
         # but calling ``skipTest`` instead makes it more visible that
         # something was not exeuted and test-runners like pytest can report
         # on this.
-        if not exists(outfile):
+        if not exists(python_fname):
             test_instance.skipTest(
-                'Expected output file %r not found!' % outfile)
+                'Expected python file %r not found!' % python_fname)
 
-        # "infile" is the "storable" file which we want to decode.
-        data = deserializer(infile)
+        # "storable_fname" is the "storable" file which we want to decode.
+        data = deserializer(storable_fname)
         assertion_function = test_instance.assertEqual
         try:
-            with open(outfile) as fp:
+            with open(python_fname) as fp:
                 code = fp.read()
-                compiled = compile(code, outfile, 'exec')
+                compiled = compile(code, python_fname, 'exec')
                 expected_scope = {}
                 exec(compiled, expected_scope)
                 result_we_need = expected_scope['result']
@@ -73,16 +73,16 @@ def make_function(deserializer, infile, outfile):
                     assertion_function = expected_scope['is_equal']
         except KeyError as exc:
             test_instance.skipTest(
-                'File %r should define the variable "result"!' % outfile)
+                'File %r should define the variable "result"!' % python_fname)
         except Exception as exc:
             test_instance.skipTest(
-                'Unable to compile %r (%s)' % (outfile, exc))
+                'Unable to compile %r (%s)' % (python_fname, exc))
 
         # Now we have proper data which we can compare in detail.
         assertion_function(
             data, result_we_need,
             'Deserialisation of %r did not equal the data '
-            'given in %r' % (infile, outfile))
+            'given in %r' % (storable_fname, python_fname))
     return fun
 
 
@@ -103,13 +103,13 @@ def attach_tests(cls, source_folder, architecture, storable_version, type):
     pattern = '*_%s.storable' % type
     files = join(source_folder, architecture, storable_version, pattern)
 
-    for infile in sorted(glob.glob(files)):
-        # "outfile" contains our "expected" data:
-        outfile = determine_outfile(infile)
+    for storable_fname in sorted(glob.glob(files)):
+        # "python_fname" contains our "expected" data:
+        python_fname = determine_outfile(storable_fname)
 
         # create a function which we will attach to the class later on
-        function_name = 'test_%s' % (P_ID.sub('_', basename(infile)))
-        fun = make_function(deserializer, infile, outfile)
+        function_name = 'test_%s' % (P_ID.sub('_', basename(storable_fname)))
+        fun = make_function(deserializer, storable_fname, python_fname)
 
         # now that the function is defined, we can attach it to the test-class.
         setattr(cls, function_name, fun)

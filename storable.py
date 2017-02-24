@@ -409,3 +409,8 @@ def deserialize(fh):
         handle_sx_object_refs(cache, data)
 
     return data
+
+
+@maybelogged
+def store(obj):
+    raise NotImplementedError('Not yet implemented')
