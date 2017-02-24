@@ -363,6 +363,19 @@ def thaw(frozen_data):
     return data
 
 @maybelogged
+def freeze(obj):
+    """
+    This currently only exists to have a symmetry with "thaw". Not sure how
+    useful this is? "thaw" itself seems unused internally, so I wonder if the
+    "freeze/thaw" functions actually make sense in Python?
+    """
+    return serialize(obj)
+
+@maybelogged
+def serialize(obj):
+    raise NotImplementedError('Not yet Implemented')
+
+@maybelogged
 def retrieve(file):
     fh = open(file, 'rb')
     ignore = fh.read(4)
@@ -409,7 +422,6 @@ def deserialize(fh):
         handle_sx_object_refs(cache, data)
 
     return data
-
 
 @maybelogged
 def store(obj):

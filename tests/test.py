@@ -46,7 +46,15 @@ def mythaw(storable_fname):
     return data
 
 
-def make_function(deserializer, storable_fname, python_fname):
+def myfreeze(obj):
+    """
+    Not sure if this makes sense (see the comment in storable.py:freeze)
+    """
+    frozen = storable.freeze(obj)
+    return frozen
+
+
+def make_deserialize_test(deserializer, storable_fname, python_fname):
     def fun(test_instance):
 
         # If certain files are not found, we dont want to continue the test.
@@ -86,6 +94,41 @@ def make_function(deserializer, storable_fname, python_fname):
     return fun
 
 
+def make_serialize_test(serializer, storable_fname, python_fname):
+    def fun(test_instance):
+
+        # If certain files are not found, we dont want to continue the test.
+        # "storable_fname" came from "glob" so we don't need to test that.
+        # We could also skip the attachment of the unit-test alltogether,
+        # but calling ``skipTest`` instead makes it more visible that
+        # something was not exeuted and test-runners like pytest can report
+        # on this.
+        if not exists(python_fname):
+            test_instance.skipTest(
+                'Expected python file %r not found!' % python_fname)
+
+        try:
+            with open(python_fname) as fp:
+                code = fp.read()
+                compiled = compile(code, python_fname, 'exec')
+                expected_scope = {}
+                exec(compiled, expected_scope)
+                python_obj = expected_scope['result']
+            data = serializer(python_obj)
+        except NotImplementedError as exc:
+            test_instance.skipTest(str(exc))
+
+        with open(storable_fname, 'rb') as fp:
+            result_we_need = fp.read()
+
+        # Now we have proper data which we can compare in detail.
+        test_instance.assertEqual(
+            data, result_we_need,
+            'Serialisation of %r did not equal the data '
+            'given in %r' % (storable_fname, python_fname))
+    return fun
+
+
 def attach_tests(cls, source_folder, architecture, storable_version, type):
     """
     Creates unit-tests based on the files found in ``source_folder``.
@@ -97,22 +140,30 @@ def attach_tests(cls, source_folder, architecture, storable_version, type):
     """
     if type in ['store', 'nstore']:
         deserializer = storable.retrieve
+        serializer = storable.store
     else:
         deserializer = mythaw
+        serializer = myfreeze
 
     pattern = '*_%s.storable' % type
-    files = join(source_folder, architecture, storable_version, pattern)
+    storable_files = join(
+        source_folder, architecture, storable_version, pattern)
 
-    for storable_fname in sorted(glob.glob(files)):
+    for storable_fname in sorted(glob.glob(storable_files)):
         # "python_fname" contains our "expected" data:
         python_fname = determine_outfile(storable_fname)
 
-        # create a function which we will attach to the class later on
-        function_name = 'test_%s' % (P_ID.sub('_', basename(storable_fname)))
-        fun = make_function(deserializer, storable_fname, python_fname)
+        # create functions which we will attach to the class later on
+        deserialize_function_name = 'test_deserialize_%s' % (
+            P_ID.sub('_', basename(storable_fname)))
+        serialize_function_name = 'test_serialize_%s' % (
+            P_ID.sub('_', basename(storable_fname)))
 
-        # now that the function is defined, we can attach it to the test-class.
-        setattr(cls, function_name, fun)
+        fun = make_deserialize_test(deserializer, storable_fname, python_fname)
+        setattr(cls, deserialize_function_name, fun)
+
+        fun = make_serialize_test(serializer, storable_fname, python_fname)
+        setattr(cls, serialize_function_name, fun)
 
 
 # A list of architectures with an array of versions we want to test against.
