@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from itertools import zip_longest
 from os.path import basename, exists, join
 from re import match, search
 import glob
@@ -14,6 +15,9 @@ P_ID = re.compile(r'[^a-zA-Z0-9]')
 src = 'tests/resources'
 res = 'tests/results'
 
+__unittest = True  # <- This disables stack traces in unittest output for
+                   # everything in this module.
+
 
 # search for the special tests where the freeze result is not the same as the
 # nfreeze result (same for store/nstore). Those tests really do have a seperate
@@ -25,6 +29,60 @@ for result in sorted(glob.glob(res + '/*.freeze.py')):
     result = basename(result)
     result = search(r'(.*)\.freeze\.py', result).group(1)
     special_tests[result] = 1
+
+
+def assertBytesEqual(test_instance, a, b, message):
+    """
+    Helper method to compare bytes with more helpful output.
+    """
+    if not isinstance(a, bytes) or not isinstance(b, bytes):
+        raise ValueError('assertBytesEqual requires two bytes objects!')
+
+    if a != b:
+        comparisons = []
+        for offset, (char_a, char_b) in enumerate(zip_longest(a, b)):
+            comp, marker = ('==', '') if char_a == char_b else ('!=', '>>')
+
+            # Using "zip_longest", overflows are marked as "None", which is
+            # unambiguous in this case, but we need to handle these
+            # separately from the main format string.
+            if char_a is None:
+                char_ab = char_ad = char_ah = char_aa = '?'
+            else:
+                char_ab = '0b{:08b}'.format(char_a)
+                char_ad = '{:3d}'.format(char_a)
+                char_ah = '0x{:02x}'.format(char_a)
+                char_aa = chr(char_a)
+
+            if char_b is None:
+                char_bb = char_bd = char_bh = char_ba = '?'
+            else:
+                char_bb = '0b{:08b}'.format(char_b)
+                char_bd = '{:3d}'.format(char_b)
+                char_bh = '0x{:02x}'.format(char_b)
+                char_ba = chr(char_b)
+
+            comparisons.append(
+                "{10:<3} Offset {0:4d}: "
+                "{1:^10} {5} {6:^10} | "
+                "{2:>3} {5} {7:>3} | "
+                "{3:^4} {5} {8:^4} | "
+                "{4!r:<6} {5} {9!r:<6}".format(
+                    offset,
+                    char_ab,
+                    char_ad,
+                    char_ah,
+                    char_aa,
+                    comp,
+                    char_bb,
+                    char_bd,
+                    char_bh,
+                    char_ba,
+                    marker))
+        raise AssertionError('Bytes differ (%s)!\n' % message +
+                             'type(a)=%s, type(b)=%s\n' % (type(a), type(b)) +
+                             '\nIndividual bytes:\n' +
+                             '\n'.join(comparisons))
 
 
 def determine_outfile(storable_fname):
@@ -122,7 +180,7 @@ def make_serialize_test(serializer, storable_fname, python_fname):
             result_we_need = fp.read()
 
         # Now we have proper data which we can compare in detail.
-        test_instance.assertEqual(
+        test_instance.assertBytesEqual(
             data, result_we_need,
             'Serialisation of %r did not equal the data '
             'given in %r' % (storable_fname, python_fname))
@@ -186,6 +244,7 @@ for arch, supported_versions in architectures:
     # much more usable error-output in case of failure.
     clsname = 'Test%s' % P_ID.sub('_', arch).capitalize()
     cls = type(clsname, (unittest.TestCase,), {})
+    cls.assertBytesEqual = assertBytesEqual
 
     # Attach test functions
     for version in supported_versions:
