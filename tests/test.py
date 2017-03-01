@@ -1,6 +1,10 @@
 from __future__ import print_function
 
-from itertools import zip_longest
+try:
+    from itertools import zip_longest
+except ImportError:
+    zip_longest = None  # We're on Python2
+
 from os.path import basename, exists, join
 from re import match, search
 import glob
@@ -37,6 +41,12 @@ def assertBytesEqual(test_instance, a, b, message):
     """
     if not isinstance(a, bytes) or not isinstance(b, bytes):
         raise ValueError('assertBytesEqual requires two bytes objects!')
+
+    if not zip_longest:
+        # We're on Python 2. Would be nice to re-implement zip_longest. For now,
+        # this will have to do.
+        test_instance.assertEqual(a, b, message)
+        return
 
     if a != b:
         comparisons = []
