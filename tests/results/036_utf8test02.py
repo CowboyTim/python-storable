@@ -1,1 +1,1 @@
-result = "\u263a" * 1024
+result = u"\u263a" * 1024
