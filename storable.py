@@ -439,9 +439,10 @@ def _read_unsigned_byte(fh):
 
 
 def skip_magic_header_if_present(fh):
+    curr_pos = fh.tell()
     file_magic = fh.read(4)
     if file_magic != b'pst0':
-        fh.seek(0)
+        fh.seek(curr_pos)
 
 
 @maybelogged
