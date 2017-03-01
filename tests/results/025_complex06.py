@@ -1,10 +1,10 @@
 result = [
     None,
     6,
-    ['a', 'b', 'c', {'uu': 5.6, 'oo': [...], 'ii': {...}}],
-    {'uu': 5.6, 'oo': [...], 'ii': {...}},
-    {'uu': 5.6, 'oo': [...], 'ii': {...}},
-    ['a', 'b', 'c', {'uu': 5.6, 'oo': [...], 'ii': {...}}],
+    ['a', 'b', 'c', {'uu': 5.6, 'oo': [Ellipsis], 'ii': {Ellipsis}}],
+    {'uu': 5.6, 'oo': [Ellipsis], 'ii': {Ellipsis}},
+    {'uu': 5.6, 'oo': [Ellipsis], 'ii': {Ellipsis}},
+    ['a', 'b', 'c', {'uu': 5.6, 'oo': [Ellipsis], 'ii': {Ellipsis}}],
     None,
     6
 ]

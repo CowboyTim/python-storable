@@ -1,4 +1,5 @@
-result = [None, 'yy', [...]]
+result = [None, 'yy', [Ellipsis]]
+
 
 def is_equal(a, b, message):
 
