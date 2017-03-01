@@ -89,7 +89,7 @@ def determine_outfile(storable_fname):
     group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze|store|nstore)\.storable$",
                   basename(storable_fname))
     testcase = group.group(1)
-    freeze   = group.group(2)
+    freeze = group.group(2)
     if freeze == 'freeze' and testcase in special_tests:
         return res + '/' + testcase + '.freeze.py'
     else:

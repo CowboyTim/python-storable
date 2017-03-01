@@ -1,1 +1,1 @@
-result = "\u263a"
+result = u"\u263a"
