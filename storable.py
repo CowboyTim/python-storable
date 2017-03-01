@@ -30,10 +30,10 @@ from functools import wraps
 from io import BytesIO
 from struct import calcsize, unpack
 import logging
+import sys
 
-import six
 
-if six.PY3:
+if sys.version_info > (3, 0):
     xrange = range
 
 
@@ -391,7 +391,7 @@ def handle_sx_object_refs(cache, data):
     if type(data) is list:
         iterateelements = enumerate(data)
     elif type(data) is dict:
-        iterateelements = six.iteritems(data)
+        iterateelements = iter(data.items())
     else:
         return
 

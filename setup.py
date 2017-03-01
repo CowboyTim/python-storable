@@ -29,7 +29,7 @@ setup(
     license='zlib/libpng',
 
     py_modules=['storable'],
-    install_requires=['six'],
+    install_requires=[],
     package_data={'': ['LICENSE.txt']},
     classifiers=[
         'Development Status :: 3 - Alpha',
