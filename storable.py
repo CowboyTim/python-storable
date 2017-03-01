@@ -61,7 +61,6 @@ def _guess_type(data):
         int,
         float,
         lambda x: x.decode('ascii'),
-        lambda x: x.decode('utf8'),
     )
     converted_result = None
     for guess in guesses:
