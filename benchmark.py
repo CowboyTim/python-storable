@@ -2,15 +2,13 @@
 
 from time import time
 
-import six
-
 import storable
 
 
 def timethese(nr, methods):
     print('Benchmark: timing {} iterations of {}...'.format(
         nr, ', '.join(methods)))
-    for k, method in six.iteritems(methods):
+    for k, method in methods.items():
         start = time()
         for i in range(nr):
             method()
