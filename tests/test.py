@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from distutils.version import StrictVersion
 from os.path import basename, exists, join
 from re import match, search
 import glob
@@ -149,3 +150,13 @@ for arch, supported_versions in architectures:
     # Remove the temporarily created class from the global scope (to avoid
     # duplicate discovery)
     del(cls)
+
+
+class TestSanity(unittest.TestCase):
+
+    def test_package_version(self):
+        # The following simply should not raise an exception. We don't want to
+        # check for the version number itself. If we did, we'd need to update
+        # this check every time we make a new release!
+        from storable import __version__
+        StrictVersion(__version__)
