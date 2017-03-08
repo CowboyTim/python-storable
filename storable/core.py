@@ -1,4 +1,3 @@
-
 #
 # License
 #
@@ -248,12 +247,12 @@ def SX_TIED_IDX(fh, cache):
 def SX_HOOK(fh, cache):
     flags = _read_unsigned_byte(fh)
 
-    while flags & int(0x40):   # SHF_NEED_RECURSE
+    while flags & 0x40:   # SHF_NEED_RECURSE
         dummy = process_item(fh, cache)
         flags = _read_unsigned_byte(fh)
 
-    if flags & int(0x20):   # SHF_IDX_CLASSNAME
-        if flags & int(0x04):   # SHF_LARGE_CLASSLEN
+    if flags & 0x20:   # SHF_IDX_CLASSNAME
+        if flags & 0x04:   # SHF_LARGE_CLASSLEN
             # TODO: test
             fmt = '>I'
             indx = unpack(fmt, fh.read(calcsize(fmt)))[0]
@@ -261,7 +260,7 @@ def SX_HOOK(fh, cache):
             indx = _read_unsigned_byte(fh)
         package_name = cache['classes'][indx]
     else:
-        if flags & int(0x04):   # SHF_LARGE_CLASSLEN
+        if flags & 0x04:   # SHF_LARGE_CLASSLEN
             # TODO: test
             # FIXME: is this actually possible?
             class_size = _read_size(fh, cache)
@@ -273,7 +272,7 @@ def SX_HOOK(fh, cache):
 
     arguments = {}
 
-    if flags & int(0x08):   # SHF_LARGE_STRLEN
+    if flags & 0x08:   # SHF_LARGE_STRLEN
         str_size = _read_size(fh, cache)
     else:
         str_size = _read_unsigned_byte(fh)
@@ -282,8 +281,8 @@ def SX_HOOK(fh, cache):
         frozen_str = _guess_type(fh.read(str_size))
         arguments[0] = frozen_str
 
-    if flags & int(0x80):   # SHF_HAS_LIST
-        if flags & int(0x10):   # SHF_LARGE_LISTLEN
+    if flags & 0x80:   # SHF_HAS_LIST
+        if flags & 0x10:   # SHF_LARGE_LISTLEN
             list_size = _read_size(fh, cache)
         else:
             list_size = _read_unsigned_byte(fh)
@@ -295,7 +294,7 @@ def SX_HOOK(fh, cache):
 
     # FIXME: implement the real callback STORABLE_thaw() still, for now, just
     # return the dictionary 'arguments' as data
-    type = flags & int(0x03)  # SHF_TYPE_MASK 0x03
+    type = flags & 0x03  # SHF_TYPE_MASK 0x03
     data = arguments
     if type == 3:  # SHT_EXTRA
         # TODO
@@ -333,12 +332,12 @@ def SX_FLAG_HASH(fh, cache):
 
 def SX_VSTRING(fh, cache):
     value = SX_SCALAR(fh, cache)
-    return tuple(int(x) for x in value[1:].split('.'))
+    return tuple(x for x in value[1:].split('.'))
 
 
 def SX_LVSTRING(fh, cache):
     value = SX_LSCALAR(fh, cache)
-    return tuple(int(x) for x in value[1:].split('.'))
+    return tuple(x for x in value[1:].split('.'))
 
 
 # *AFTER* all the subroutines
