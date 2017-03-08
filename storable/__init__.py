@@ -29,4 +29,4 @@ from os.path import dirname, join
 with open(join(dirname(__file__), 'version.txt')) as fp:
     __version__ = fp.read()
 
-from .core import thaw, retrieve, deserialize
+from .core import thaw, retrieve, deserialize, freeze, store
