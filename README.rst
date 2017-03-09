@@ -1,6 +1,9 @@
 python-storable
 ===============
 
+.. image:: https://travis-ci.org/CowboyTim/python-storable.svg?branch=develop
+    :target: https://travis-ci.org/CowboyTim/python-storable
+
 Overview
 --------
 
@@ -11,6 +14,8 @@ standardized: JSON, XML, CSV,.. etc. Storable is more or less Perl specific.
 
 To ease integration between Perl - where storable sometimes is the only option
 - and Python this module is a bridge.
+
+The module has been tested to work with Python 2.7 and upwards.
 
 
 .. warning:: **Perl Scalar Handling**
