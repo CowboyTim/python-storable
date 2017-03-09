@@ -30,7 +30,10 @@ setup(
 
     packages=find_packages(exclude=["tests.*", "tests", "docs"]),
     install_requires=[],
-    package_data={'': ['LICENSE.txt']},
+    package_data={
+        '': ['LICENSE.txt'],
+        'storable': ['version.txt'],
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
