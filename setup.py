@@ -13,10 +13,13 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
+with open(path.join(here, 'storable', 'version.txt'), encoding='utf-8') as f:
+    version = f.read().strip()
+
 
 setup(
     name='storable',
-    version='0.2.1',
+    version=version,
 
     description='Python Perl Storable module',
     long_description=long_description,
