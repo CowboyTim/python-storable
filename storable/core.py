@@ -56,18 +56,20 @@ def _guess_type(data):
     the generated test-data is wrong). For now, we will use the conversion
     functions below to "guess" the type.
     """
-    guesses = (
-        int,
-        float,
-        lambda x: x.decode('ascii'),
-    )
-    converted_result = None
-    for guess in guesses:
+    try:
+        converted_result = float(data)
+        if converted_result.is_integer():
+            # use "data" again to avoid rounding errors
+            converted_result = int(data)
+    except ValueError:
+        converted_result = None
+
+    if converted_result is None:
         try:
-            converted_result = guess(data)
-            break
-        except ValueError:
-            pass
+            converted_result = data.decode('ascii')
+        except UnicodeDecodeError:
+            converted_result = None
+
     return data if converted_result is None else converted_result
 
 
