@@ -26,8 +26,8 @@ setup(
 
     url='http://github.com/mike-hart/python-storable',
 
-    author='Michael Hart',
-    author_email='hart.michael+github@gmail.com',
+    author='CowboyTim',
+    author_email='aardbeiplantje@gmail.com',
 
     license='zlib/libpng',
 
