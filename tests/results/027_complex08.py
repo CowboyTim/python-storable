@@ -1,1 +1,6 @@
-[None, 6, ['a', 'b', 'c', {'uu': '5.6'}], {'uu': '5.6'}, {'uu': '5.6'}, ['a', 'b', 'c', {'uu': '5.6'}], None, 6]
+result = [None, 6, ['a', 'b', 'c', {'uu': 5.6}], None, None, None, None, None]
+result[6] = result[0]
+result[7] = result[1]
+result[5] = result[2]
+result[4] = result[2][3]
+result[3] = result[2][3]

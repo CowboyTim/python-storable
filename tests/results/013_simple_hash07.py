@@ -1,1 +1,5 @@
-{'aa': None, 'undef': None, 'bb': None}
+result = {
+    'aa': None,
+    'undef': None,
+    'bb': None
+}

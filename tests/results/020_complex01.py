@@ -1,1 +1,8 @@
-[None, [None, None, None, None, None, 'x'], [None, None, None, None, None, 'x'], [None, None, None, None, None, 'x'], [None, None, None, None, None, 'x']]
+array = [None, None, None, None, None, 'x']
+result = [
+    None,
+    array,
+    array,
+    array,
+    array,
+]

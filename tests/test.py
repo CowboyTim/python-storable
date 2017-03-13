@@ -1,112 +1,20 @@
-#!/usr/bin/python
+from __future__ import print_function
 
-import unittest
-import glob
-import traceback
+from distutils.version import StrictVersion
+from os.path import basename, exists, join
 from re import match, search
-from os.path import basename
+import glob
+import re
+import unittest
 
 import storable
 
-nr_of_tests = 36
 
-expected = {
-    'ppc64-linux'   : {
-        '2.21' : { 
-            'nfreeze' : nr_of_tests + 9,
-            'freeze'  : nr_of_tests + 9,
-            'store'   : nr_of_tests + 9,
-            'nstore'  : nr_of_tests + 9
-        }
-    },
-    'i386-darwin'   : {
-        '2.19' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : nr_of_tests,
-            'nstore'  : nr_of_tests
-        }
-    },
-    'i686-linux'   : {
-        '2.15' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : 0,
-            'nstore'  : 0
-        }
-    },
-    'MSWin32'      : {
-        '2.15' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : 0,
-            'nstore'  : 0
-        }
-    },
-    'ppc-linux'    : {
-        '2.18' : { 
-            'nfreeze' : nr_of_tests + 9,
-            'freeze'  : nr_of_tests + 9,
-            'store'   : nr_of_tests + 9,
-            'nstore'  : nr_of_tests + 9
-        },
-        '2.20' : { 
-            'nfreeze' : nr_of_tests + 9,
-            'freeze'  : nr_of_tests + 9,
-            'store'   : nr_of_tests + 9,
-            'nstore'  : nr_of_tests + 9
-        },
-        '2.21' : { 
-            'nfreeze' : nr_of_tests + 9,
-            'freeze'  : nr_of_tests + 9,
-            'store'   : nr_of_tests + 9,
-            'nstore'  : nr_of_tests + 9
-        }
-    },
-    'sun4-solaris' : {
-        '2.08' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : 0,
-            'nstore'  : 0
-        }
-    },
-    'x86_64-linux' : {
-        '2.18' : { 
-            'nfreeze' : nr_of_tests + 9,
-            'freeze'  : nr_of_tests + 9,
-            'store'   : nr_of_tests + 9,
-            'nstore'  : nr_of_tests + 9
-        },
-        '2.21' : { 
-            'nfreeze' : nr_of_tests,
-            'freeze'  : nr_of_tests,
-            'store'   : nr_of_tests,
-            'nstore'  : nr_of_tests
-        },
-        '2.19' : { 
-            'nfreeze' : nr_of_tests + 9,
-            'freeze'  : nr_of_tests + 9,
-            'store'   : nr_of_tests + 9,
-            'nstore'  : nr_of_tests + 9
-        },
-        '2.29' : {
-            'nfreeze' : nr_of_tests + 13,
-            'freeze'  : nr_of_tests + 13,
-            'store'   : nr_of_tests + 13,
-            'nstore'  : nr_of_tests + 13
-        },
-        '2.41' : {
-            'nfreeze' : nr_of_tests + 13,
-            'freeze'  : nr_of_tests + 13,
-            'store'   : nr_of_tests + 13,
-            'nstore'  : nr_of_tests + 13
-        }
-    },
-}
+P_ID = re.compile(r'[^a-zA-Z0-9]')
 
-src = 't/resources'
-res = 't/results'
+src = 'tests/resources'
+res = 'tests/results'
+
 
 # search for the special tests where the freeze result is not the same as the
 # nfreeze result (same for store/nstore). Those tests really do have a seperate
@@ -119,204 +27,136 @@ for result in sorted(glob.glob(res + '/*.freeze.py')):
     result = search(r'(.*)\.freeze\.py', result).group(1)
     special_tests[result] = 1
 
+
 def determine_outfile(infile):
     outfile = basename(infile)
     group = match(r"^(.*)_\d+\.\d+_.*_(freeze|nfreeze|store|nstore)\.storable$", outfile)
     testcase = group.group(1)
-    freeze   = group.group(2)
+    freeze = group.group(2)
     if freeze == 'freeze' and testcase in special_tests:
         return res + '/' + testcase + '.freeze.py'
     else:
         return res + '/' + testcase + '.py'
 
+
 def mythaw(infile):
-    #print('reading from infile:'+infile)
     infh = open(infile, 'rb')
     data = infh.read()
     infh.close()
-
-    # thaw() it
-    try:
-        data = storable.thaw(data)
-    except Exception,e:
-        traceback.print_exc(e)
-
+    data = storable.thaw(data)
     return data
 
-        
-class TestStorable(unittest.TestCase):
 
-    #
-    def test_ppc64_linux_2_21_nfreeze(self):
-        self.run_tests('ppc64-linux', '2.21', 'nfreeze')
-    def test_ppc64_linux_2_21_freeze(self):
-        self.run_tests('ppc64-linux', '2.21', 'freeze')
-    def test_ppc64_linux_2_21_nstore(self):
-        self.run_tests('ppc64-linux', '2.21', 'nstore')
-    def test_ppc64_linux_2_21_store(self):
-        self.run_tests('ppc64-linux', '2.21', 'store')
+def make_function(deserializer, infile, outfile):
+    def fun(test_instance):
 
-    #
-    def test_i386_darwin_2_19_nfreeze(self):
-        self.run_tests('i386-darwin', '2.19', 'nfreeze')
-    def test_i386_darwin_2_19_freeze(self):
-        self.run_tests('i386-darwin', '2.19', 'freeze')
-    def test_i386_darwin_2_19_nstore(self):
-        self.run_tests('i386-darwin', '2.19', 'nstore')
-    def test_i386_darwin_2_19_store(self):
-        self.run_tests('i386-darwin', '2.19', 'store')
+        # If certain files are not found, we dont want to continue the test.
+        # "infile" came from "glob" so we don't need to test that.
+        # We could also skip the attachment of the unit-test alltogether,
+        # but calling ``skipTest`` instead makes it more visible that
+        # something was not exeuted and test-runners like pytest can report
+        # on this.
+        if not exists(outfile):
+            test_instance.skipTest(
+                'Expected output file %r not found!' % outfile)
 
-    #
-    def test_i686_linux_2_15_nfreeze(self):
-        self.run_tests('i686-linux', '2.15', 'nfreeze')
-    def test_i686_linux_2_15_freeze(self):
-        self.run_tests('i686-linux', '2.15', 'freeze')
-    def test_i686_linux_2_15_nstore(self):
-        self.run_tests('i686-linux', '2.15', 'nstore')
-    def test_i686_linux_2_15_store(self):
-        self.run_tests('i686-linux', '2.15', 'store')
-
-    #
-    def test_MSWin32_2_15_nfreeze(self):
-        self.run_tests('MSWin32', '2.15', 'nfreeze')
-    def test_MSWin32_2_15_freeze(self):
-        self.run_tests('MSWin32', '2.15', 'freeze')
-    def test_MSWin32_2_15_nstore(self):
-        self.run_tests('MSWin32', '2.15', 'nstore')
-    def test_MSWin32_2_15_store(self):
-        self.run_tests('MSWin32', '2.15', 'store')
-
-    #
-    def test_ppc_linux_2_18_nfreeze(self):
-        self.run_tests('ppc-linux', '2.18', 'nfreeze')
-    def test_ppc_linux_2_18_freeze(self):
-        self.run_tests('ppc-linux', '2.18', 'freeze')
-    def test_ppc_linux_2_18_nstore(self):
-        self.run_tests('ppc-linux', '2.18', 'nstore')
-    def test_ppc_linux_2_18_store(self):
-        self.run_tests('ppc-linux', '2.18', 'store')
-
-    #
-    def test_ppc_linux_2_20_nfreeze(self):
-        self.run_tests('ppc-linux', '2.20', 'nfreeze')
-    def test_ppc_linux_2_20_freeze(self):
-        self.run_tests('ppc-linux', '2.20', 'freeze')
-    def test_ppc_linux_2_20_nstore(self):
-        self.run_tests('ppc-linux', '2.20', 'nstore')
-    def test_ppc_linux_2_20_store(self):
-        self.run_tests('ppc-linux', '2.20', 'store')
-
-    #
-    def test_ppc_linux_2_21_nfreeze(self):
-        self.run_tests('ppc-linux', '2.21', 'nfreeze')
-    def test_ppc_linux_2_21_freeze(self):
-        self.run_tests('ppc-linux', '2.21', 'freeze')
-    def test_ppc_linux_2_21_nstore(self):
-        self.run_tests('ppc-linux', '2.21', 'nstore')
-    def test_ppc_linux_2_21_store(self):
-        self.run_tests('ppc-linux', '2.21', 'store')
-
-    #
-    def test_sun4_solaris_2_08_nfreeze(self):
-        self.run_tests('sun4-solaris', '2.08', 'nfreeze')
-    def test_sun4_solaris_2_08_freeze(self):
-        self.run_tests('sun4-solaris', '2.08', 'freeze')
-    def test_sun4_solaris_2_08_nstore(self):
-        self.run_tests('sun4-solaris', '2.08', 'nstore')
-    def test_sun4_solaris_2_08_store(self):
-        self.run_tests('sun4-solaris', '2.08', 'store')
-
-    #
-    def test_x86_64_linux_2_18_nfreeze(self):
-        self.run_tests('x86_64-linux', '2.18', 'nfreeze')
-    def test_x86_64_linux_2_18_freeze(self):
-        self.run_tests('x86_64-linux', '2.18', 'freeze')
-    def test_x86_64_linux_2_18_nstore(self):
-        self.run_tests('x86_64-linux', '2.18', 'nstore')
-    def test_x86_64_linux_2_18_store(self):
-        self.run_tests('x86_64-linux', '2.18', 'store')
-
-    #
-    def test_x86_64_linux_2_21_nfreeze(self):
-        self.run_tests('x86_64-linux', '2.21', 'nfreeze')
-    def test_x86_64_linux_2_21_freeze(self):
-        self.run_tests('x86_64-linux', '2.21', 'freeze')
-    def test_x86_64_linux_2_21_nstore(self):
-        self.run_tests('x86_64-linux', '2.21', 'nstore')
-    def test_x86_64_linux_2_21_store(self):
-        self.run_tests('x86_64-linux', '2.21', 'store')
-
-    #
-    def test_x86_64_linux_2_19_nfreeze(self):
-        self.run_tests('x86_64-linux', '2.19', 'nfreeze')
-    def test_x86_64_linux_2_19_freeze(self):
-        self.run_tests('x86_64-linux', '2.19', 'freeze')
-    def test_x86_64_linux_2_19_nstore(self):
-        self.run_tests('x86_64-linux', '2.19', 'nstore')
-    def test_x86_64_linux_2_19_store(self):
-        self.run_tests('x86_64-linux', '2.19', 'store')
-
-    #
-    def test_x86_64_linux_2_29_nfreeze(self):
-        self.run_tests('x86_64-linux', '2.29', 'nfreeze')
-    def test_x86_64_linux_2_29_freeze(self):
-        self.run_tests('x86_64-linux', '2.29', 'freeze')
-    def test_x86_64_linux_2_29_nstore(self):
-        self.run_tests('x86_64-linux', '2.29', 'nstore')
-    def test_x86_64_linux_2_29_store(self):
-        self.run_tests('x86_64-linux', '2.29', 'store')
-
-    #
-    def test_x86_64_linux_2_41_nfreeze(self):
-        self.run_tests('x86_64-linux', '2.41', 'nfreeze')
-    def test_x86_64_linux_2_41_freeze(self):
-        self.run_tests('x86_64-linux', '2.41', 'freeze')
-    def test_x86_64_linux_2_41_nstore(self):
-        self.run_tests('x86_64-linux', '2.41', 'nstore')
-    def test_x86_64_linux_2_41_store(self):
-        self.run_tests('x86_64-linux', '2.41', 'store')
-
-    def run_tests(self, architecture, storableversion, type):
-        d = mythaw
-        if type in ['store', 'nstore']:
-            d = storable.retrieve
-        nr_tests = expected[architecture][storableversion][type]
-        files = src+'/'+architecture+'/'+storableversion+'/*_'+type+'.storable'
-        count = 0
-        for infile in sorted(glob.glob(files)):
-            self.do_test(infile, deserializer=d)
-            count = count + 1
-        self.assertEqual(count, nr_tests)
-
-    def do_test(self, infile, deserializer):
-
+        # "infile" is to "storable" file which we want to decode.
         data = deserializer(infile)
+        assertion_function = test_instance.assertEqual
+        try:
+            with open(outfile) as fp:
+                code = fp.read()
+                compiled = compile(code, outfile, 'exec')
+                expected_scope = {}
+                exec(compiled, expected_scope)
+                result_we_need = expected_scope['result']
+                if 'is_equal' in expected_scope:
+                    assertion_function = expected_scope['is_equal']
+        except KeyError as exc:
+            test_instance.skipTest(
+                'File %r should define the variable "result"!' % outfile)
+        except Exception as exc:
+            test_instance.skipTest(
+                'Unable to compile %r (%s)' % (outfile, exc))
 
-        result_we_need = None
+        # Now we have proper data which we can compare in detail.
+        assertion_function(
+            data, result_we_need,
+            'Deserialisation of %r did not equal the data '
+            'given in %r' % (infile, outfile))
+    return fun
 
-        # read the to-be-result in
+
+def attach_tests(cls, source_folder, architecture, storable_version, type):
+    """
+    Creates unit-tests based on the files found in ``source_folder``.
+
+    For each input (storable) file we find in the subfolder (based on
+    *architecture*, *storable_version* and "*type*" of storable) we create
+    unit-test functions and attach them to the ``TestCase`` class given via
+    *cls*.
+    """
+    if type in ['store', 'nstore']:
+        deserializer = storable.retrieve
+    else:
+        deserializer = mythaw
+
+    pattern = '*_%s.storable' % type
+    files = join(source_folder, architecture, storable_version, pattern)
+
+    for infile in sorted(glob.glob(files)):
+        # "outfile" contains our "expected" data:
         outfile = determine_outfile(infile)
-        try:
-            outfh = open(outfile,'rb')
-            result_we_need = outfh.read()
-            #print(str(result_we_need))
-            outfh.close()
-        except Exception,e:
-            traceback.print_exc(e)
 
-        # dump it
-        if True:
-            #print('writing output to '+outfile)
-            outfh = open(outfile,'wb')
-            outfh.write(str(data))
-            outfh.close()
+        # create a function which we will attach to the class later on
+        function_name = 'test_%s' % (P_ID.sub('_', basename(infile)))
+        fun = make_function(deserializer, infile, outfile)
 
-        # check
-        try:
-            self.assertEqual(str(data), str(result_we_need))
-        except AssertionError, e:
-            print('infile: '+str(infile)+' ,outfile: '+str(outfile))
-            raise e
+        # now that the function is defined, we can attach it to the test-class.
+        setattr(cls, function_name, fun)
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestStorable)
-unittest.TextTestRunner(verbosity=2).run(suite)
+
+# A list of architectures with an array of versions we want to test against.
+architectures = [
+    ('MSWin32', ['2.15']),
+    ('i386-darwin', ['2.19']),
+    ('i686-linux', ['2.15']),
+    ('ppc-linux', ['2.18', '2.20', '2.21']),
+    ('ppc64-linux', ['2.21']),
+    ('sun4-solaris', ['2.08']),
+    ('x86_64-linux', ['2.18', '2.19', '2.21', '2.29', '2.41'])
+]
+
+
+for arch, supported_versions in architectures:
+    # Dynamically create a class (one class per architecture)
+    # This creates a subclass of "unittest.TestCase" which will later be
+    # injected to the globals. It avoids having to create tedious tests manually
+    # while still giving us atomic unit-tests for each specific case and hence
+    # much more usable error-output in case of failure.
+    clsname = 'Test%s' % P_ID.sub('_', arch).capitalize()
+    cls = type(clsname, (unittest.TestCase,), {})
+
+    # Attach test functions
+    for version in supported_versions:
+        attach_tests(cls, src, arch, version, 'freeze')
+        attach_tests(cls, src, arch, version, 'nfreeze')
+        attach_tests(cls, src, arch, version, 'store')
+        attach_tests(cls, src, arch, version, 'nstore')
+
+    # Make the class available in the global scope (for test discovery)
+    globals()[clsname] = cls
+
+    # Remove the temporarily created class from the global scope (to avoid
+    # duplicate discovery)
+    del(cls)
+
+
+class TestSanity(unittest.TestCase):
+
+    def test_package_version(self):
+        # The following simply should not raise an exception. We don't want to
+        # check for the version number itself. If we did, we'd need to update
+        # this check every time we make a new release!
+        from storable import __version__
+        StrictVersion(__version__)

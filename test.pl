@@ -1,10 +1,12 @@
 #!/usr/bin/perl
 
+use lib 'perl-modules';
 use strict; use warnings;
 
 use FindBin;
 use lib "$FindBin::Bin";
 
+use Fcntl ":seek";
 use Fatal qw(open);
 use File::Path qw(mkpath);
 use Config;
@@ -331,11 +333,54 @@ save_sample('ref04', \\\\@array);
     save_sample('integer_hash',  {44556677 => 'a', 556677 => 'b'});
 }
 
+{
+    # Immortal test: undef
+    save_sample('immortal_test01_undef', \undef());
+}
+
+{
+    # Immortal test: yes
+    save_sample('immortal_test02_yes', \!0);
+}
+
+{
+    # Immortal test: no
+    #save_sample('immortal_test03_no', \!1);
+    # This _would_ work if !1 wasn't a dualvar... :|
+    # Was dualvar added after PL_sv_(yes|no)?
+    # How do i get an instance of PL_sv_no that isn't a dualvar such that
+    # storable will write it and not the scalar?
+    # For now, write out something of the same expected length, then modify it
+    # to what it should be.
+    my @names = save_sample('immortal_test03_no', \!0);
+    my $sx_sv_no = "\x{10}";
+    for my $filename (@names) {
+        open(my $fh, '+<:raw', $filename) or die;
+        seek($fh, -1, SEEK_END);
+        print $fh $sx_sv_no;
+        close $fh;
+    }
+}
+
+{
+    # Version test (short)
+    my $a = v5.6.0.0.35;
+    save_sample('version_test01_short', \$a);
+}
+
+{
+    # Version test (long)
+    my $a = v5.6.0.0.35555555555.5555555555.555555555.555555555.555555555.5555555555.5555555555.5555555.555555555.55555555.555555555.55555555.555555555.555555555.555555555.5555555555.5555555555.5555555.555555555.33333333.333333333.33333333.333333333.333333333.333333333.1111111111;
+    save_sample('version_test02_long', \$a);
+}
+
 sub save_sample {
     my ($what, $data) = @_;
     $count++;
+    my @filenames = ();
     for my $type (qw(freeze nfreeze)){
         my $filename = generate_filename($what, $count, $type);
+        push @filenames, $filename;
         my $a;
         {
             no strict 'refs';
@@ -348,12 +393,14 @@ sub save_sample {
 
     for my $type (qw(store nstore)){
         my $filename = generate_filename($what, $count, $type);
+        push @filenames, $filename;
         my $a;
         {
             no strict 'refs';
             $a = &$type($data, $filename);
         }
     }
+    return @filenames;
 }
 
 sub generate_filename {

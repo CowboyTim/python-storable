@@ -1,1 +1,1 @@
-{'aa': 'bb'}
+result = {'aa': 'bb'}
