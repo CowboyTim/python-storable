@@ -30,3 +30,12 @@ The module has been tested to work with Python 2.7 and upwards.
     time of this writing: float → int → ASCII-string). The first one that
     matches wins. This means that **The Perl scalar "123" will always be
     returned as an integer**
+
+
+Quick Usage
+-----------
+
+::
+
+    from storable import retrieve
+    data = retrieve('/path/to/file.storable')
