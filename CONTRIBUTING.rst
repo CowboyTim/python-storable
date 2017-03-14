@@ -4,7 +4,9 @@ Contribution Guide
 
 The project is maintained `on github <gh>`_ and uses the `the well known "nvie"
 workflow <nvie>`_. As of version 1.0, version numbers follow `semantic
-versioning <semver>`_.
+versioning <semver>`_ while still complying with `PEP 440 <pep440>`_. See the
+`note on semantic versioning <pep440semver>`_ in that document.
+
 
 Submitting Bug Reports & Feature Requests
 -----------------------------------------
@@ -86,3 +88,5 @@ Example Command (assuming a virtualenv in ``./env``)::
 .. _gh: https://github.com/CowboyTim/python-storable
 .. _nvie: http://nvie.com/posts/a-successful-git-branching-model/
 .. _semver: https://www.semver.org
+.. _pep440: https://www.python.org/dev/peps/pep-0440
+.. _pep440semver: https://www.python.org/dev/peps/pep-0440/#semantic-versioning
