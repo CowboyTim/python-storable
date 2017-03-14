@@ -406,7 +406,7 @@ def handle_sx_object_refs(cache, data):
 @maybelogged
 def process_item(fh, cache):
     magic_type = fh.read(1)
-    if magic_type in exclude_for_cache:  # TODO: mhart: why was the condition inverted (not in -> in)?
+    if magic_type in exclude_for_cache:
         data = engine[magic_type](fh, cache)
     else:
         i = cache['objectnr']
