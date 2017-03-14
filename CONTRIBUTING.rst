@@ -2,25 +2,25 @@ Contribution Guide
 ==================
 
 
-The project is maintained `on github <gh>`_ and uses the `the well known "nvie"
-workflow <nvie>`_. As of version 1.0, version numbers follow `semantic
-versioning <semver>`_ while still complying with `PEP 440 <pep440>`_. See the
-`note on semantic versioning <pep440semver>`_ in that document.
+The project is maintained `on github <gh_>`_ and uses the `the well known
+"nvie" workflow <nvie_>`_. As of version 1.0, version numbers follow `semantic
+versioning <semver_>`_ while still complying with `PEP 440 <pep440_>`_. See the
+`note on semantic versioning <pep440semver_>`_ in that document.
 
 
 Submitting Bug Reports & Feature Requests
 -----------------------------------------
 
-Please use the `github project <gh>`_ to submit any requests.
+Please use the `github project <gh_>`_ to submit any requests.
 
 
 Branches & Pull Requests
 ========================
 
-As per the `proposed workflow <nvie>`_, each feature should be implemented on a
-feature branch. This also goes for anything related to pull-requests (even for
-proposed bugfixes). Keeping each pull-request on a dedicated branch will make
-merging much easier.
+As per the `proposed workflow <nvie_>`_, each feature should be implemented on
+a feature branch. This also goes for anything related to pull-requests (even
+for proposed bugfixes). Keeping each pull-request on a dedicated branch will
+make merging much easier.
 
 
 Unit Tests
