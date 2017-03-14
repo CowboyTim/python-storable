@@ -6,5 +6,5 @@ python:
   - "3.5"
   - "3.6"
   - "nightly"
-install: "pip install ."
+install: "pip install -r requirements-travis.txt"
 script: "py.test tests/test.py"
