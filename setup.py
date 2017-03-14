@@ -24,7 +24,7 @@ setup(
     description='Python Perl Storable module',
     long_description=long_description,
 
-    url='http://github.com/mike-hart/python-storable',
+    url='http://github.com/CowboyTim/python-storable',
 
     author='CowboyTim',
     author_email='aardbeiplantje@gmail.com',
