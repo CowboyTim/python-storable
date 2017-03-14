@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from distutils.version import StrictVersion
 from os.path import basename, exists, join
 from re import match, search
 import glob
@@ -158,5 +157,9 @@ class TestSanity(unittest.TestCase):
         # The following simply should not raise an exception. We don't want to
         # check for the version number itself. If we did, we'd need to update
         # this check every time we make a new release!
+        try:
+            from verlib import NormalizedVersion
+        except ImportError:
+            self.skipTest('verlib is unavailable!')
         from storable import __version__
-        StrictVersion(__version__)
+        NormalizedVersion(__version__)

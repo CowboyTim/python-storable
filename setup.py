@@ -33,6 +33,9 @@ setup(
 
     packages=find_packages(exclude=["tests.*", "tests", "docs"]),
     install_requires=[],
+    extras_require={
+        'test': ['pytest', 'verlib']
+    },
     package_data={
         '': ['LICENSE.txt'],
         'storable': ['version.txt'],
