@@ -7,7 +7,7 @@ import re
 import unittest
 
 import storable
-
+import storable.output
 
 P_ID = re.compile(r'[^a-zA-Z0-9]')
 
@@ -83,6 +83,19 @@ def make_function(deserializer, infile, outfile):
             data, result_we_need,
             'Deserialisation of %r did not equal the data '
             'given in %r' % (infile, outfile))
+        try:
+            reserialized_data = storable.thaw(storable.output.serialize(data))
+        except RuntimeError as err:
+            if err.args == ('maximum recursion depth exceeded while calling a Python object',):
+                reserialized_data = None
+            else:
+                raise
+        if reserialized_data is not None:
+            assertion_function(
+                data, reserialized_data,
+                'Serialization of %r did not equal the data '
+                'given in %r' % (data, reserialized_data))
+
     return fun
 
 
