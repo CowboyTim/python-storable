@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 """
 import storable.output
 storable.output.serialize({'x': 'bar', 'y': 1, 'z': 1.23, 'w':[], 'v':[1,2,3]})
