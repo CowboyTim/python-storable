@@ -84,7 +84,11 @@ def make_function(deserializer, infile, outfile):
             'Deserialisation of %r did not equal the data '
             'given in %r' % (infile, outfile))
         try:
-            reserialized_data = storable.thaw(storable.output.serialize(data))
+            serialized_data = storable.output.serialize(data)
+            reserialized_data = storable.thaw(serialized_data)
+            if isinstance(data, dict):
+                storable.thaw(storable.output.modify_hash(serialized_data, 'fooobar_keyy', 'xy'))
+                storable.thaw(storable.output.modify_hash(serialized_data, 'abc', 45.12))
         except RuntimeError as err:
             if 'recursion' in err.args[0].lower()\
                or repr(err).startswith('Recursion'):  # for python3.5+
