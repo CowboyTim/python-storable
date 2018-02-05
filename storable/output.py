@@ -3,6 +3,7 @@ import storable.output
 storable.output.serialize({'x': 'bar', 'y': 1, 'z': 1.23, 'w':[], 'v':[1,2,3]})
 """
 from struct import pack
+from storable.core import thaw
 
 
 def serialize(py_jsonable, pst_prefix=True, version=(5, 9)):
@@ -12,6 +13,60 @@ def serialize(py_jsonable, pst_prefix=True, version=(5, 9)):
     ret_bytes += bytes(version)
     ret_bytes += process_item(py_jsonable)
     return ret_bytes
+
+
+def modify_hash(serialized, key, value, serialize_method=None):
+    """
+    For a limited set of storables which must:
+    * be in network byte order
+    * be a hash/dict at the base-level
+    you can use this method to add/modify keys as long as the
+    new value serializes similarly.  This allows you to keep
+    ref/object information from the original while only updating
+    a specific 'simple' value (e.g. integer, etc.
+
+    When running this method, make sure you wrap in a
+    try...except AssertionError... as any violation of the
+    necessary parameters will raise one.
+    """
+    assert(isinstance(key, str))
+    size_start = 3
+    if serialized.startswith(b'pst0'):
+        size_start += 4
+    is_network_byte_order = (serialized[size_start - 3] & 1) == 1
+    assert(is_network_byte_order)
+    full = thaw(serialized)
+    serialized_value = None
+    if serialize_method:
+        serialized_value = (serialize_method.magic_type
+                            + serialize_method(value))
+    else:
+        serialized_value = process_item(value)
+    serialized_key = serialize_longscalar(str(key))
+    if key in full:
+        # Just going to modify in-place
+        # We need a unique key in the serialization or we can't (as easily)
+        # figure out where to update:
+        assert(serialized.count(serialized_key) == 1)
+        # Make sure it's not a variable-length value
+        # or if it is, that the replacement is the same length
+        assert(serialize_method  # trust caller
+               or not hasattr(value, '__len__')
+               or len(value) == len(full[key]))
+        key_start = serialized.index(serialized_key)
+        value_start = key_start - len(serialized_value)
+        # make sure the type-byte aligns.
+        assert(serialized_value[0] == serialized[value_start])
+        return (serialized[:value_start]
+                + serialized_value
+                + serialized[key_start:])
+    else:
+        # Need to update key-count and append
+        return (serialized[:size_start]
+                + unsigned_int(len(full) + 1)  # updated length
+                + serialized[size_start + 4:]
+                + serialized_value
+                + serialized_key)
 
 
 def unsigned_int(value, area=4):
