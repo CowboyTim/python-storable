@@ -26,15 +26,17 @@ def modify_hash(serialized, key, value, serialize_method=None):
     a specific 'simple' value (e.g. integer, etc.
 
     When running this method, make sure you wrap in a
-    try...except AssertionError... as any violation of the
+    try...except ValueError... as any violation of the
     necessary parameters will raise one.
     """
-    assert(isinstance(key, str))
+    if not isinstance(key, str):
+        raise ValueError("Keys must be strings")
     size_start = 3
     if serialized.startswith(b'pst0'):
         size_start += 4
     is_network_byte_order = (serialized[size_start - 3] & 1) == 1
-    assert(is_network_byte_order)
+    if not is_network_byte_order:
+        raise ValueError("serialized object must be in network byte order, not machine-specific")
     full = thaw(serialized)
     serialized_value = None
     if serialize_method:
@@ -47,16 +49,20 @@ def modify_hash(serialized, key, value, serialize_method=None):
         # Just going to modify in-place
         # We need a unique key in the serialization or we can't (as easily)
         # figure out where to update:
-        assert(serialized.count(serialized_key) == 1)
+        if serialized.count(serialized_key) != 1:
+            raise ValueError("Key occurred more than once, so intrusive modification is impossible")
         # Make sure it's not a variable-length value
         # or if it is, that the replacement is the same length
-        assert(serialize_method  # trust caller
-               or not hasattr(value, '__len__')
-               or len(value) == len(full[key]))
+        if not (serialize_method  # trust caller
+                or not hasattr(value, '__len__')
+                or len(value) == len(full[key])):
+            raise ValueError("Value parameter is not same-length as the existing value")
         key_start = serialized.index(serialized_key)
         value_start = key_start - len(serialized_value)
         # make sure the type-byte aligns.
-        assert(serialized_value[0] == serialized[value_start])
+        if serialized_value[0] != serialized[value_start]:
+            raise ValueError("Value parameter did not match the existing parameter type. "
+                             "Try adding a serialize_method argument, to force the right type.")
         return (serialized[:value_start]
                 + serialized_value
                 + serialized[key_start:])
@@ -93,7 +99,8 @@ def signed_smallint(value):
     """
     negative = (value < 0)
     value = abs(value)
-    assert(value < 128)
+    if value >= 128:
+        raise ValueError("A small int must be less <128 to fit in a byte.")
     if not negative:
         value = value + 128
     return bytes([value])
