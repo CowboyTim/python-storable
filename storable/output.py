@@ -204,7 +204,7 @@ def detect_type(x):
         else:
             return serialize_longscalar
     else:
-        raise NotImplementedError("unable to serialize %s" % x)
+        raise NotImplementedError("unable to serialize type %s with value %s" % (type(x), x))
 
 
 def process_item(x):
