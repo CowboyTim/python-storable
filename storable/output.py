@@ -41,7 +41,7 @@ def modify_hash(serialized, key, value, serialize_method=None):
     size_start = 3
     if serialized.startswith(b'pst0'):
         size_start += 4
-    is_network_byte_order = (serialized[size_start - 3] & 1) == 1
+    is_network_byte_order = (ord(serialized[size_start - 3]) & 1) == 1
     if not is_network_byte_order:
         raise ValueError("serialized object must be in network byte order"
                          ", not machine-specific")
