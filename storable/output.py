@@ -7,6 +7,11 @@ storable.output.serialize({'x': 'bar', 'y': 1, 'z': 1.23, 'w':[], 'v':[1,2,3]})
 from struct import pack
 from storable.core import thaw
 
+try:
+    basestring  # python2.7 compatibility
+except NameError:
+    basestring = str
+
 
 def serialize(py_jsonable, pst_prefix=True, version=(5, 9)):
     ret_bytes = bytes()
@@ -31,14 +36,15 @@ def modify_hash(serialized, key, value, serialize_method=None):
     try...except ValueError... as any violation of the
     necessary parameters will raise one.
     """
-    if not isinstance(key, str):
+    if not isinstance(key, basestring):
         raise ValueError("Keys must be strings")
     size_start = 3
     if serialized.startswith(b'pst0'):
         size_start += 4
     is_network_byte_order = (serialized[size_start - 3] & 1) == 1
     if not is_network_byte_order:
-        raise ValueError("serialized object must be in network byte order, not machine-specific")
+        raise ValueError("serialized object must be in network byte order"
+                         ", not machine-specific")
     full = thaw(serialized)
     serialized_value = None
     if serialize_method:
@@ -52,19 +58,24 @@ def modify_hash(serialized, key, value, serialize_method=None):
         # We need a unique key in the serialization or we can't (as easily)
         # figure out where to update:
         if serialized.count(serialized_key) != 1:
-            raise ValueError("Key occurred more than once, so intrusive modification is impossible")
+            raise ValueError("Key occurred more than once, "
+                             "so intrusive modification is impossible")
         # Make sure it's not a variable-length value
         # or if it is, that the replacement is the same length
         if not (serialize_method  # trust caller
                 or not hasattr(value, '__len__')
                 or len(value) == len(full[key])):
-            raise ValueError("Value parameter is not same-length as the existing value")
+            raise ValueError(
+                "Value parameter is not same-length as the existing value"
+            )
         key_start = serialized.index(serialized_key)
         value_start = key_start - len(serialized_value)
         # make sure the type-byte aligns.
         if serialized_value[0] != serialized[value_start]:
-            raise ValueError("Value parameter did not match the existing parameter type. "
-                             "Try adding a serialize_method argument, to force the right type.")
+            raise ValueError(
+                "Value parameter did not match the existing parameter type. "
+                "Try adding a serialize_method argument, "
+                "to force the right type.")
         return (serialized[:value_start]
                 + serialized_value
                 + serialized[key_start:])
@@ -198,7 +209,7 @@ def detect_type(x):
             return serialize_scalar
     elif x is None:
         return serialize_null
-    elif isinstance(x, str):
+    elif isinstance(x, basestring):
         if max([ord(c) for c in x]) > 128:
             return serialize_unicode
         elif len(x) < 256:
@@ -206,7 +217,9 @@ def detect_type(x):
         else:
             return serialize_longscalar
     else:
-        raise NotImplementedError("unable to serialize type %s with value %s" % (type(x), x))
+        raise NotImplementedError(
+            "unable to serialize type %s with value %s" % (type(x), x)
+        )
 
 
 def process_item(x):
