@@ -17,7 +17,7 @@ def serialize(py_jsonable, pst_prefix=True, version=(5, 9)):
     ret_bytes = bytes()
     if pst_prefix:
         ret_bytes += b'pst0'
-    ret_bytes += bytes(version)
+    ret_bytes += bytes(bytearray(version))
     ret_bytes += process_item(py_jsonable)
     return ret_bytes
 
@@ -99,7 +99,7 @@ def unsigned_int(value, area=4):
         dig_val = value // digit
         final.append(dig_val)
         value -= (dig_val * digit)
-    return bytes(final)
+    return bytes(bytearray(final))
 
 
 def byte_len(size, area=4):
@@ -116,7 +116,7 @@ def signed_smallint(value):
         raise ValueError("A small int must be less <128 to fit in a byte.")
     if not negative:
         value = value + 128
-    return bytes([value])
+    return bytes(bytearray([value]))
 signed_smallint.magic_type = b'\x08'
 
 
@@ -137,6 +137,8 @@ serialize_double.magic_type = b'\x07'
 def serialize_scalar(scalar, area=1):
     if isinstance(scalar, bytes):
         ret_bytes = scalar
+    elif isinstance(scalar, basestring):
+        ret_bytes = scalar.encode('utf-8')
     else:
         ret_bytes = str(scalar).encode('utf-8')
     return bytes(byte_len(len(ret_bytes), area)
@@ -162,7 +164,6 @@ serialize_null.magic_type = b'\x05'
 def serialize_array(py_arr):
     # note, for 0-length arrays, it'll be the length
     # and then nothing after
-    ret_bytes = bytes()
     return bytes(byte_len(len(py_arr))
                  + b''.join([process_item(x) for x in py_arr]))
 serialize_array.magic_type = b'\x04\x02'  # reference, then array
