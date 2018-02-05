@@ -86,7 +86,7 @@ def make_function(deserializer, infile, outfile):
         try:
             reserialized_data = storable.thaw(storable.output.serialize(data))
         except RuntimeError as err:
-            if err.args == ('maximum recursion depth exceeded while calling a Python object',)\
+            if 'recursion' in err.args[0].lower()\
                or repr(err).startswith('Recursion'):  # for python3.5+
                 reserialized_data = None
             else:
