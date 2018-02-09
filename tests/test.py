@@ -7,7 +7,7 @@ import re
 import unittest
 
 import storable
-
+import storable.output
 
 P_ID = re.compile(r'[^a-zA-Z0-9]')
 
@@ -83,6 +83,24 @@ def make_function(deserializer, infile, outfile):
             data, result_we_need,
             'Deserialisation of %r did not equal the data '
             'given in %r' % (infile, outfile))
+        try:
+            serialized_data = storable.output.serialize(data)
+            reserialized_data = storable.thaw(serialized_data)
+            if isinstance(data, dict):
+                storable.thaw(storable.output.modify_hash(serialized_data, 'fooobar_keyy', 'xy'))
+                storable.thaw(storable.output.modify_hash(serialized_data, 'abc', 45.12))
+        except RuntimeError as err:
+            if 'recursion' in err.args[0].lower()\
+               or repr(err).startswith('Recursion'):  # for python3.5+
+                reserialized_data = None
+            else:
+                raise
+        if reserialized_data is not None:
+            assertion_function(
+                data, reserialized_data,
+                'Serialization of %r did not equal the data '
+                'given in %r' % (data, reserialized_data))
+
     return fun
 
 
