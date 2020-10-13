@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import os
 from os.path import basename, exists, join
 from re import match, search
 import glob
@@ -61,6 +62,7 @@ def make_function(deserializer, infile, outfile):
 
         # "infile" is to "storable" file which we want to decode.
         data = deserializer(infile)
+
         assertion_function = test_instance.assertEqual
         try:
             with open(outfile) as fp:
@@ -100,6 +102,7 @@ def make_function(deserializer, infile, outfile):
                 data, reserialized_data,
                 'Serialization of %r did not equal the data '
                 'given in %r' % (data, reserialized_data))
+
 
     return fun
 
@@ -141,7 +144,7 @@ architectures = [
     ('ppc-linux', ['2.18', '2.20', '2.21']),
     ('ppc64-linux', ['2.21']),
     ('sun4-solaris', ['2.08']),
-    ('x86_64-linux', ['2.18', '2.19', '2.21', '2.29', '2.41'])
+    ('x86_64-linux', ['2.18', '2.19', '2.21', '2.29', '2.41', '3.15'])
 ]
 
 

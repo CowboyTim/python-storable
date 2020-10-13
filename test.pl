@@ -10,12 +10,13 @@ use Fcntl ":seek";
 use Fatal qw(open);
 use File::Path qw(mkpath);
 use Config;
+use Encode qw(_utf8_on);
 
 use Storable qw(nfreeze freeze nstore store);
 
 # make the base path
 my $base = 
-    "$FindBin::Bin/t/resources/$Config{myarchname}/$Storable::VERSION";
+    "$FindBin::Bin/tests/resources/$Config{myarchname}/$Storable::VERSION";
 mkpath($base);
 my $filenames = {};
 my $count     = 0;
@@ -372,6 +373,13 @@ save_sample('ref04', \\\\@array);
     # Version test (long)
     my $a = v5.6.0.0.35555555555.5555555555.555555555.555555555.555555555.5555555555.5555555555.5555555.555555555.55555555.555555555.55555555.555555555.555555555.555555555.5555555555.5555555555.5555555.555555555.33333333.333333333.33333333.333333333.333333333.333333333.1111111111;
     save_sample('version_test02_long', \$a);
+}
+
+{
+    # utf-8 test: small scalar, but looks like a float, or set utf-8 on a string that does that
+    my $a = "0.1334e-6";
+    _utf8_on($a);
+    save_sample('utf8test03', \$a);
 }
 
 sub save_sample {
