@@ -116,8 +116,7 @@ def SX_LSCALAR(fh, cache):
 
 @maybelogged
 def SX_LUTF8STR(fh, cache):
-    raw_result = fh.read(_read_size(fh, cache)).decode('utf-8')
-    return _guess_type(raw_result)
+    return fh.read(_read_size(fh, cache)).decode('utf-8')
 
 
 @maybelogged
@@ -178,9 +177,7 @@ def SX_SCALAR(fh, cache):
 
 @maybelogged
 def SX_UTF8STR(fh, cache):
-    size = _read_unsigned_byte(fh)
-    raw_result = fh.read(size).decode('utf-8')
-    return _guess_type(raw_result)
+    return fh.read(_read_unsigned_byte(fh)).decode('utf-8')
 
 
 @maybelogged
