@@ -11,4 +11,3 @@ script: "py.test tests/test.py"
 branches:
   only:
     - master
-    - develop
