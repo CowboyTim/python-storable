@@ -1,7 +1,7 @@
 python-storable
 ===============
 
-.. image:: https://travis-ci.org/CowboyTim/python-storable.svg?branch=develop
+.. image:: https://travis-ci.org/CowboyTim/python-storable.svg?branch=master
     :target: https://travis-ci.org/CowboyTim/python-storable
 
 Overview
