@@ -1,6 +1,9 @@
+
 python-storable
 ===============
 
+.. image:: https://raster.shields.io/pypi/v/storable
+    :target: https://raster.shields.io/pypi/v/storable
 .. image:: https://travis-ci.org/CowboyTim/python-storable.svg?branch=master
     :target: https://travis-ci.org/CowboyTim/python-storable
 
