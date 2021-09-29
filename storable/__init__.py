@@ -25,5 +25,5 @@
 # Tim Aerts <aardbeiplantje@gmail.com>
 #
 
-__version__ = '1.2.3'
+__version__ = '1.2.4'
 from .core import thaw, retrieve, deserialize

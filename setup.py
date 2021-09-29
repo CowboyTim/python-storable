@@ -15,7 +15,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='storable',
-    version='1.2.3',
+    version='1.2.4',
 
     description='Python Perl Storable module',
     long_description=long_description,
