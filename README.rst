@@ -5,7 +5,7 @@ python-storable
 .. image:: https://raster.shields.io/pypi/v/storable
     :target: https://pypi.org/project/storable/
 .. image:: https://raster.shields.io/travis/CowboyTim/python-storable/master
-    :target: https://travis-ci.org/github/CowboyTim/python-storable
+    :target: https://travis-ci.com/github/CowboyTim/python-storable
 
 Overview
 --------
