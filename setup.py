@@ -13,13 +13,9 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open(path.join(here, 'storable', 'version.txt'), encoding='utf-8') as f:
-    version = f.read().strip()
-
-
 setup(
     name='storable',
-    version=version,
+    version='1.2.3',
 
     description='Python Perl Storable module',
     long_description=long_description,
@@ -37,8 +33,7 @@ setup(
         'test': ['pytest', 'verlib']
     },
     package_data={
-        '': ['LICENSE.txt'],
-        'storable': ['version.txt'],
+        '': ['LICENSE.txt']
     },
     classifiers=[
         'Development Status :: 3 - Alpha',

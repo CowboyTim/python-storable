@@ -25,8 +25,5 @@
 # Tim Aerts <aardbeiplantje@gmail.com>
 #
 
-from os.path import dirname, join
-with open(join(dirname(__file__), 'version.txt')) as fp:
-    __version__ = fp.read()
-
+__version__ = '1.2.3'
 from .core import thaw, retrieve, deserialize

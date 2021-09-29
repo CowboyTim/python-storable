@@ -1,3 +1,2 @@
 include *.txt
-include storable/version.txt
 recursive-include docs *.txt
