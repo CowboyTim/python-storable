@@ -1,0 +1,13 @@
+language: python
+dist: focal
+os: linux
+arch: amd64
+virt: lxd
+python:
+  - "2.7"
+  - "3.8"
+install: "pip install -r requirements-travis.txt"
+script: "py.test tests/test.py"
+branches:
+  only:
+    - master
