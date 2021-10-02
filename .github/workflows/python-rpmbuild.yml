@@ -1,9 +1,10 @@
+name: Upload Release Asset
+
 on:
   push:
     tags:
     - 'v*'
-
-name: Upload Release Asset
+  workflow_dispatch:
 
 jobs:
   build:
