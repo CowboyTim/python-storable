@@ -4,7 +4,7 @@
 
 Summary: Python module that is able to read Perl storable data.
 Name: python-storable
-Version: 1.1.0
+Version: 1.2.4
 
 Release: 1%{?dist}
 
@@ -44,5 +44,11 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/storable
 
 %changelog
+* Sat Oct 02 2021 Tim Aerts <aardbeiplantje@gmail.com> 1.2.4-1
+- Updated this rpm spec file for version 1.2.4
+- Enable travis CI integration with travis-ci.com
+- Enable github Actions integration with pupi.org
+- Fix utf8 guessing
+- Add Storable 3.15 tests
 * Sat Oct 03 2020 Rich Johnson <richard.johnson@stratus.com> 1.1.0-1
 - Packaging of earlier work by Tim Aerts <aardbeiplantje@gmail.com>
