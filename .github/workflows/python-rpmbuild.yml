@@ -23,9 +23,8 @@ jobs:
           pip install setuptools wheel twine
       - name: Build
         run: |
-          python setup.py sdist bdist_wheel
+          python setup.py sdist bdist_rpm
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: dist/*.rpm
