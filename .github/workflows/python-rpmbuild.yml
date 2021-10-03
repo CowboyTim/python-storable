@@ -27,7 +27,7 @@ jobs:
       - name: Build RPM
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          V='{{github.ref}}'
+          V=$GITHUB_REF
           V=${V#refs/tags/}
           V=${V#v}
           rpmbuild -bb ./python-storable.spec --define "_topdir {{github.workspace}}/dist" --define "version $V"
