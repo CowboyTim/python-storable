@@ -5,6 +5,9 @@ on:
     tags:
     - 'v*'
   workflow_dispatch:
+  release:
+    types:
+      - created
 
 jobs:
   build:
