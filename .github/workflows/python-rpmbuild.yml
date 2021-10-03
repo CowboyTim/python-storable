@@ -21,11 +21,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install setuptools wheel twine
-      - name: Build
+      - name: Build SDIST
         run: |
-          python setup.py sdist bdist_rpm
+          python setup.py sdist -d ./dist/SOURCES/
+      - name: Build RPM
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          V='{{github.ref}}'
+          V=${V#refs/tags/}
+          V=${V#v}
+          rpmbuild -bb ./python-storable.spec --define "_topdir {{github.workspace}}/dist" --define "version $V"
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: dist/*.rpm
+          files: dist/RPMS/noarch/python-storable-*.rpm
