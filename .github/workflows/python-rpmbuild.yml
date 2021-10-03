@@ -31,7 +31,7 @@ jobs:
           V=${V#refs/tags/}
           V=${V#v}
           V=${V%%-*}
-          rpmbuild -bb ./python-storable.spec --define "_topdir {github.workspace}/dist" --define "version $V"
+          rpmbuild -bb ./python-storable.spec --define "_topdir $GITHUB_WORKSPACE/dist" --define "version $V"
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
