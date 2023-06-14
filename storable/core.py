@@ -26,7 +26,6 @@
 #
 
 from __future__ import unicode_literals
-from past.builtins import basestring
 from functools import wraps
 import io
 from struct import calcsize, unpack
