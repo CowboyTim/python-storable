@@ -556,8 +556,7 @@ def modify_hash(serialized, key, value, serialize_method=None):
     full = thaw(serialized)
     serialized_value = None
     if serialize_method:
-        serialized_value = (serialize_method.magic_type
-                            + serialize_method(value))
+        serialized_value = serialize_method(value)
     else:
         serialized_value = process_item(value)
     serialized_key = serialize_longscalar(str(key))
@@ -597,7 +596,7 @@ def modify_hash(serialized, key, value, serialize_method=None):
 
 
 @maybelogged
-def unsigned_int(value, area=4):
+def unsigned_int(value, area=4, depth=0):
     """
     Returns unsigned value with area param's byte-length
     This is also used for writing out the size
@@ -617,7 +616,7 @@ def byte_len(size, area=4):
 
 
 @maybelogged
-def signed_smallint(value):
+def signed_smallint(value, depth=0):
     """
     Returns signed value
     """
@@ -627,68 +626,66 @@ def signed_smallint(value):
         raise ValueError("A small int must be less <128 to fit in a byte.")
     if not negative:
         value = value + 128
-    return bytes(bytearray([value]))
-signed_smallint.magic_type = b'\x08'
+    return b'\x08' + bytes(bytearray([value]))
 
 
 @maybelogged
-def signed_normalint(value, area=4):
+def signed_normalint(value, area=4, depth=0):
     """
     Returns signed value
     """
     # TODO: accept cache arg and depend on int_unpack_fmt
-    return pack('!i', value)
-signed_normalint.magic_type = b'\x09'
+    return b'\x09' + pack('!i', value)
 
 
 @maybelogged
-def serialize_double(value):
-    return pack('!d', value)
-serialize_double.magic_type = b'\x07'
+def serialize_double(value, depth=0):
+    return b'\x07' + pack('!d', value)
 
 
 @maybelogged
-def serialize_scalar(scalar, area=1):
+def serialize_string(scalar, area=4, depth=0):
     if isinstance(scalar, bytes):
         ret_bytes = scalar
     elif isinstance(scalar, basestring):
         ret_bytes = scalar.encode('utf-8')
     else:
         ret_bytes = str(scalar).encode('utf-8')
-    return bytes(byte_len(len(ret_bytes), area)
-                 + ret_bytes)
-serialize_scalar.magic_type = b'\x0a'
+    return bytes(byte_len(len(ret_bytes), area) + ret_bytes)
+
+@maybelogged
+def serialize_scalar(py_str, depth=0):
+    return b'\x0a' + serialize_string(py_str, area=1, depth=depth)
+
+@maybelogged
+def serialize_longscalar(py_str, depth=0):
+    return b'\x01' + serialize_string(py_str, area=4, depth=depth)
 
 
 @maybelogged
-def serialize_longscalar(py_str):
-    return serialize_scalar(py_str, area=4)
-serialize_longscalar.magic_type = b'\x01'
+def serialize_unicode(py_str, depth=0):
+    return b'\x18' + serialize_string(py_str, area=4, depth=depth)
 
 
 @maybelogged
-def serialize_unicode(py_str):
-    return serialize_scalar(py_str, area=4)
-serialize_unicode.magic_type = b'\x18'
+def serialize_null(isNone, depth=0):
+    return b'\x05' + b''
 
 
 @maybelogged
-def serialize_null(isNone):
-    return b''
-serialize_null.magic_type = b'\x05'
-
-
-@maybelogged
-def serialize_array(py_arr):
+def serialize_array(py_arr, depth=0):
     # note, for 0-length arrays, it'll be the length
     # and then nothing after
-    return bytes(byte_len(len(py_arr))
-                 + b''.join([process_item(x) for x in py_arr]))
-serialize_array.magic_type = b'\x02'
+    prefix = b''
+    if depth == 0:
+        prefix = b'\x02'
+    else:
+        prefix = b'\x04\x02'
+    return prefix + bytes(byte_len(len(py_arr)) + b''.join([process_item(x, depth=depth+1) for x in py_arr]))
 
 
 @maybelogged
-def serialize_dict(py_dict):
+def serialize_dict(py_dict, depth=0):
     """
     dicts (or associative arrays) start with the
     *number of keys* (not byte length) and then
@@ -696,12 +693,16 @@ def serialize_dict(py_dict):
     a string
     """
     dict_len = len(py_dict)  # number of keys
-    ret_bytes = bytes(byte_len(dict_len))
+    v_bytes = b''
     for k, v in py_dict.items():
-        ret_bytes += process_item(v)
-        ret_bytes += serialize_longscalar(str(k))
-    return ret_bytes
-serialize_dict.magic_type = b'\x03'
+        v_bytes += process_item(v, depth=depth+1)
+        v_bytes += serialize_string(str(k), depth=depth)
+    prefix = b''
+    if depth == 0:
+        prefix = b'\x03'
+    else:
+        prefix = b'\x04\x03'
+    return prefix + bytes(byte_len(dict_len)) + v_bytes
 
 
 INT_MAX = 2147483647
@@ -738,15 +739,12 @@ def detect_type(x):
         else:
             return serialize_longscalar
     else:
-        raise NotImplementedError(
-            "unable to serialize type %s with value %s" % (type(x), x)
-        )
+        raise NotImplementedError("unable to serialize type %s with value %s" % (type(x), x))
 
 
 @maybelogged
-def process_item(x):
+def process_item(x, depth=0):
     method = detect_type(x)
-    return bytes(method.magic_type
-                 + method(x))
+    return bytes(method(x, depth=depth))
 
 
