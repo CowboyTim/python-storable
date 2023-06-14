@@ -644,13 +644,17 @@ def serialize_double(value, depth=0):
 
 
 @maybelogged
-def serialize_string(scalar, area=4, depth=0):
-    if isinstance(scalar, bytes):
-        ret_bytes = scalar
-    elif isinstance(scalar, basestring):
-        ret_bytes = scalar.encode('utf-8')
+def serialize_string(s, area=4, depth=0):
+    if isinstance(s, bytes):
+        ret_bytes = s
+    elif isinstance(s, basestring):
+        ret_bytes = s.encode('utf-8')
+    elif isinstance(s, io.BytesIO):
+        ret_bytes = s.read().encode('utf-8')
+    elif isinstance(s, io.BufferedReader):
+        ret_bytes = s.read().encode('utf-8')
     else:
-        ret_bytes = str(scalar).encode('utf-8')
+        ret_bytes = str(s).encode('utf-8')
     return bytes(byte_len(len(ret_bytes), area) + ret_bytes)
 
 @maybelogged
