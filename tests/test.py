@@ -186,4 +186,4 @@ class TestSanity(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(buffer=True,verbosity=0)
