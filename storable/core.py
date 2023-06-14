@@ -28,7 +28,7 @@
 from __future__ import unicode_literals
 from past.builtins import basestring
 from functools import wraps
-from io import BytesIO
+import io
 from struct import calcsize, unpack
 import logging
 import os
@@ -427,7 +427,7 @@ def process_item(fh, cache):
 
 @maybelogged
 def thaw(frozen_data):
-    fh = BytesIO(frozen_data)
+    fh = io.BytesIO(frozen_data)
     data = deserialize(fh)
     fh.close()
     return data
@@ -731,6 +731,10 @@ def detect_type(x):
             return serialize_scalar
     elif x is None:
         return serialize_null
+    elif isinstance(x, io.BytesIO):
+        return serialize_longscalar
+    elif isinstance(x, io.BufferedReader):
+        return serialize_longscalar
     elif isinstance(x, basestring):
         if max([ord(c) for c in x]) > 128:
             return serialize_unicode
