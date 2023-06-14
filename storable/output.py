@@ -168,7 +168,7 @@ def serialize_array(py_arr):
     # and then nothing after
     return bytes(byte_len(len(py_arr))
                  + b''.join([process_item(x) for x in py_arr]))
-serialize_array.magic_type = b'\x04\x02'  # reference, then array
+serialize_array.magic_type = b'\x02'
 
 
 def serialize_dict(py_dict):
