@@ -26,4 +26,4 @@
 #
 
 __version__ = '1.2.4'
-from .core import thaw, retrieve, deserialize, freeze, modify_hash
+from .core import thaw, retrieve, deserialize, freeze
