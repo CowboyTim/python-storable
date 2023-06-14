@@ -18,6 +18,10 @@ standardized: JSON, XML, CSV,.. etc. Storable is more or less Perl specific.
 To ease integration between Perl - where storable sometimes is the only option
 - and Python this module is a bridge.
 
+This module will not be efficient in memory usage nor cpu usage. All data,
+stringified objects and data types are kept in memory prior to the end result
+being written out to disk if requested.
+
 The module has been tested to work with Python 2.7 and upwards.
 
 
