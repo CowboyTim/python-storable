@@ -6,6 +6,8 @@ virt: lxd
 python:
   - "2.7"
   - "3.8"
+  - "3.9"
+  - "3.10"
 install: "pip install -r requirements-travis.txt"
 script: "py.test tests/test.py"
 branches:
