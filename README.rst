@@ -43,8 +43,8 @@ Quick Usage
     from storable import retrieve
     data = retrieve('/path/to/file.storable')
 
-    from storable.output import serialize
+    from storable import freeze
     # only works (so far) for JSON-able types and recursion-limited depth
     # This will not serialize to the exact same object in perl as retrieve/thaw-ing
     # but will be readable by perl to load json-like values
-    serialized_bytes = serialize({'x': 'bar', 'y': 1, 'z': 1.23, 'w':[], 'v':[1,2,3]})
+    serialized_bytes = freeze({'x': 'bar', 'y': 1, 'z': 1.23, 'w':[], 'v':[1,2,3]})
