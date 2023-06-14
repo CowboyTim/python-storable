@@ -183,3 +183,7 @@ class TestSanity(unittest.TestCase):
             self.skipTest('verlib is unavailable!')
         from storable import __version__
         NormalizedVersion(__version__)
+
+
+if __name__ == '__main__':
+    unittest.main()
