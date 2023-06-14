@@ -709,7 +709,6 @@ INT_MAX = 2147483647
 
 @maybelogged
 def detect_type(x):
-    print(f"{type(x)}")
     if isinstance(x, dict):
         return serialize_dict
     elif isinstance(x, list):
