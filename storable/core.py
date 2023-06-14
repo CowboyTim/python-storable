@@ -25,10 +25,12 @@
 # Tim Aerts <aardbeiplantje@gmail.com>
 #
 
+from __future__ import unicode_literals
 from functools import wraps
-from io import BytesIO
+import io
 from struct import calcsize, unpack
 import logging
+import os
 import sys
 
 
@@ -43,9 +45,15 @@ def id_():
         yield n
 
 
+# logging setup
 ID_GENERATOR = id_()
-LOG = logging.getLogger(__name__)
+loglevel = os.getenv('PYTHON_STORABLE_LOGLEVEL', 'INFO').upper()
+logging.basicConfig(level=loglevel,format=f'[%(levelname)s] %(asctime)s [{os.getpid()}] %(message)s',datefmt="%Y-%m-%dT%H:%M:%S.000Z")
+logger = logging.getLogger()
+logger.setLevel(loglevel)
 DEBUG = False
+if loglevel == 'DEBUG':
+    DEBUG = True
 
 
 def _guess_type(data):
@@ -78,17 +86,17 @@ def maybelogged(f):
     If the DEBUG flag is set in this module (must be set before importing),
     deserialisation functions will be logged.
     """
-
     if not DEBUG:
         return f
 
     @wraps(f)
     def fun(*args, **kwargs):
+
         id_ = next(ID_GENERATOR)
-        LOG.debug('[%s] Entering %s with args=%r, kwargs=%r',
+        logger.debug('[%s] Entering %s with args=%r, kwargs=%r',
                   id_, f.__name__, args, kwargs)
         output = f(*args, **kwargs)
-        LOG.debug('[%s] Result: %r', id_, output)
+        logger.debug('[%s] Result: %r', id_, output)
         return output
     return fun
 
@@ -418,7 +426,7 @@ def process_item(fh, cache):
 
 @maybelogged
 def thaw(frozen_data):
-    fh = BytesIO(frozen_data)
+    fh = io.BytesIO(frozen_data)
     data = deserialize(fh)
     fh.close()
     return data
@@ -507,3 +515,176 @@ def deserialize(fh):
         handle_sx_object_refs(cache, data)
 
     return data
+
+
+@maybelogged
+def freeze(py_jsonable, pst_prefix=True, version=(5, 9)):
+    ret_bytes = bytes()
+    if pst_prefix:
+        ret_bytes += b'pst0'
+    ret_bytes += bytes(bytearray(version))
+    ret_bytes += process_item(py_jsonable)
+    return ret_bytes
+
+
+@maybelogged
+def unsigned_int(value, area=4, depth=0):
+    """
+    Returns unsigned value with area param's byte-length
+    This is also used for writing out the size
+    """
+    final = []
+    for i in range(area-1, -1, -1):
+        digit = 256**i
+        dig_val = value // digit
+        final.append(dig_val)
+        value -= (dig_val * digit)
+    return bytes(bytearray(final))
+
+
+@maybelogged
+def byte_len(size, area=4):
+    return unsigned_int(size, area=area)
+
+
+@maybelogged
+def signed_smallint(value, depth=0):
+    """
+    Returns signed value
+    """
+    negative = (value < 0)
+    value = abs(value)
+    if value >= 128:
+        raise ValueError("A small int must be less <128 to fit in a byte.")
+    if not negative:
+        value = value + 128
+    return b'\x08' + bytes(bytearray([value]))
+
+
+@maybelogged
+def signed_normalint(value, area=4, depth=0):
+    """
+    Returns signed value
+    """
+    # TODO: accept cache arg and depend on int_unpack_fmt
+    return b'\x09' + pack('!i', value)
+
+
+@maybelogged
+def serialize_double(value, depth=0):
+    return b'\x07' + pack('!d', value)
+
+
+@maybelogged
+def serialize_string(s, area=4, depth=0):
+    if isinstance(s, bytes):
+        ret_bytes = s
+    elif isinstance(s, basestring):
+        ret_bytes = s.encode('utf-8')
+    elif isinstance(s, io.BytesIO):
+        ret_bytes = s.read().encode('utf-8')
+    elif isinstance(s, io.BufferedReader):
+        ret_bytes = s.read().encode('utf-8')
+    else:
+        ret_bytes = str(s).encode('utf-8')
+    return bytes(byte_len(len(ret_bytes), area) + ret_bytes)
+
+@maybelogged
+def serialize_scalar(py_str, depth=0):
+    return b'\x0a' + serialize_string(py_str, area=1, depth=depth)
+
+@maybelogged
+def serialize_longscalar(py_str, depth=0):
+    return b'\x01' + serialize_string(py_str, area=4, depth=depth)
+
+
+@maybelogged
+def serialize_unicode(py_str, depth=0):
+    return b'\x18' + serialize_string(py_str, area=4, depth=depth)
+
+
+@maybelogged
+def serialize_null(isNone, depth=0):
+    return b'\x05' + b''
+
+
+@maybelogged
+def serialize_array(py_arr, depth=0):
+    # note, for 0-length arrays, it'll be the length
+    # and then nothing after
+    prefix = b''
+    if depth == 0:
+        prefix = b'\x02'
+    else:
+        prefix = b'\x04\x02'
+    return prefix + bytes(byte_len(len(py_arr)) + b''.join([process_item(x, depth=depth+1) for x in py_arr]))
+
+
+@maybelogged
+def serialize_dict(py_dict, depth=0):
+    """
+    dicts (or associative arrays) start with the
+    *number of keys* (not byte length) and then
+    does value-key pairs with the key mostly being
+    a string
+    """
+    dict_len = len(py_dict)  # number of keys
+    v_bytes = b''
+    for k, v in py_dict.items():
+        v_bytes += process_item(v, depth=depth+1)
+        v_bytes += serialize_string(str(k), depth=depth)
+    prefix = b''
+    if depth == 0:
+        prefix = b'\x03'
+    else:
+        prefix = b'\x04\x03'
+    return prefix + bytes(byte_len(dict_len)) + v_bytes
+
+
+INT_MAX = 2147483647
+
+
+@maybelogged
+def detect_type(x):
+    if isinstance(x, dict):
+        return serialize_dict
+    elif isinstance(x, list):
+        return serialize_array
+    elif isinstance(x, int):
+        if -128 < x < 128:
+            return signed_smallint
+        elif abs(x) < INT_MAX:
+            return signed_normalint
+        else:
+            # too big so print it out like a string
+            return serialize_scalar
+    elif isinstance(x, bool):
+        return signed_smallint
+    elif isinstance(x, float):
+        if x > INT_MAX:
+            return serialize_double
+        else:
+            return serialize_scalar
+    elif x is None:
+        return serialize_null
+    elif isinstance(x, io.BytesIO):
+        return serialize_longscalar
+    elif isinstance(x, io.BufferedReader):
+        return serialize_longscalar
+    elif isinstance(x, basestring):
+        if max([ord(c) for c in x]) > 128:
+            return serialize_unicode
+        elif len(x) < 256:
+            return serialize_scalar
+        else:
+            return serialize_longscalar
+    else:
+        raise NotImplementedError("unable to serialize type %s with value %s" % (type(x), x))
+
+
+@maybelogged
+def process_item(x, depth=0):
+    method = detect_type(x)
+    return bytes(method(x, depth=depth))
+
+
